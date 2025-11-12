@@ -3,12 +3,14 @@
 namespace Modules\Auth\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
+use Illuminate\Validation\Validator;
 use Modules\Auth\Enums\VerificationActionType;
 use Modules\Auth\Enums\VerificationUsernameType;
 use Modules\Auth\Rules\UsernameTypeRule;
+use Modules\Auth\Services\VerificationCodeService;
+use function PHPUnit\TestFixture\func;
 
 class SendVerificationCodeRequest extends FormRequest
 {
@@ -27,17 +29,18 @@ class SendVerificationCodeRequest extends FormRequest
             'usernameType' => VerificationUsernameType::detectType($this->get('username', ''))?->value,
         ]);
     }
+
     /**
      * Get the validation rules that apply to the request.
      */
     public function rules(): array
     {
-        $username = $this->input('username' ,'');
-        $action = $this->input('action' ,'');
+        $username = $this->input('username', '');
+        $action = $this->input('action', '');
 
         return [
-            'usernameType' => ['bail','required', new Enum(VerificationUsernameType::class)],
-            'action' => ['bail','required', 'string', new Enum(VerificationActionType::class)],
+            'usernameType' => ['bail', 'required', new Enum(VerificationUsernameType::class)],
+            'action' => ['bail', 'required', 'string', new Enum(VerificationActionType::class)],
             'username' => ['bail', 'required', 'string', new UsernameTypeRule(), ...$this->getActionTypeRules($username, $action)]
         ];
     }
@@ -54,6 +57,27 @@ class SendVerificationCodeRequest extends FormRequest
             ? [Rule::unique('users', $column)]
             : [Rule::exists('users', $column)];
 
+    }
+
+
+    public function after(): array
+    {
+        return [
+            function (Validator $validator) {
+                if ($validator->errors()->isNotEmpty()) return;
+
+                $recipient = $this->input('username');
+                $recipientType = $this->input('usernameType');
+                $action = $this->input('action');
+
+                $service = new VerificationCodeService();
+                $waitTime = $service->waitTime($recipient, VerificationActionType::from($action));
+                if ($waitTime > 0 ) {
+                    $validator->errors()->add('action', trans('auth::validation.wait_time' ,['time'=>$waitTime."s"]));
+                };
+
+            },
+        ];
     }
 
 }

@@ -31,10 +31,7 @@ class AuthServiceProvider extends ServiceProvider
         $this->registerConfig();
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->name, 'database/migrations'));
-
-        RateLimiter::for('api.v1.auth.check-user', function (Request $request){
-            return Limit::perMinute(2)->by($request->ip());
-        });
+        $this->loadLimiters();
     }
 
     /**
@@ -160,5 +157,15 @@ class AuthServiceProvider extends ServiceProvider
         return $paths;
     }
 
+    private function loadLimiters(): void
+    {
 
+        RateLimiter::for('apiauth.check-user', function (Request $request) {
+            return app()->isLocal() ?:Limit::perMinute(10)->by($request->ip());
+        });
+
+        RateLimiter::for('api.auth.send-code', function (Request $request) {
+            return app()->isLocal() ?:Limit::perMinute(3)->by($request->ip());
+        });
+    }
 }
