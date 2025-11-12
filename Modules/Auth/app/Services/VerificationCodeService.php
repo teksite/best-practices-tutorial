@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Cache\RateLimiter;
+use Illuminate\Support\Facades\Mail;
+use Modules\Auth\Emails\VerificatrionCodeEmail;
 use Modules\Auth\Enums\VerificationActionType;
 use Modules\Auth\Enums\VerificationUsernameType;
 use Modules\User\Models\User;
@@ -25,7 +27,6 @@ class VerificationCodeService
     public function __construct()
     {
         $this->rateLimiter = app(RateLimiter::class);
-
     }
 
 
@@ -50,9 +51,9 @@ class VerificationCodeService
 
     }
 
-    public function waitTime(int|string $recipient, VerificationActionType $type): int
+    public function waitTime(int|string $recipient, VerificationActionType $type ): int
     {
-        return 0;
+        return 0 ;
         $limiterKey = "send-code:" . request()->ip();
         if ($this->rateLimiter->tooManyAttempts($limiterKey, $this->maxSendsPerHour)) return false;
 
@@ -214,12 +215,11 @@ class VerificationCodeService
 
     }
 
-    public function SendByEmail($code, $to, $expired_at)
+    public function SendByEmail($code, $recipient, $expired_at)
     {
         try {
-//            $response=Mail
-            $response->throw();
-            return $response->successful();
+            $res= Mail::to($recipient)->send(new VerificatrionCodeEmail($code ,$expired_at));
+           return true;
 
         } catch (\Exception $e) {
             return false;

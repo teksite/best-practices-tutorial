@@ -24,16 +24,12 @@ class VerificationCodeController extends Controller
     public function send(SendVerificationCodeRequest $request)
     {
         $action = $request->validated('action');
-        $recipientType = $request->validated('usernameType');
         $recipient = $request->validated('username');
 
 
         $service = new VerificationCodeService();
-        $code = $service->handle($recipient, VerificationActionType::from($action), VerificationUsernameType::from($recipientType));
+        $code = $service->handle($recipient, VerificationActionType::from($action), VerificationUsernameType::detectType($recipient));
 
-        $res = $service->Send($code['code'], $recipient, VerificationActionType::from($action));
-
-
-        return $res;
+        return $service->Send($code['code'], $recipient, VerificationActionType::from($action));
     }
 }

@@ -23,7 +23,7 @@ class SendVerificationCodeRequest extends FormRequest
         return true;
     }
 
-    protected function prepareForValidation()
+    protected function prepareForValidation(): void
     {
         $this->merge([
             'usernameType' => VerificationUsernameType::detectType($this->get('username', ''))?->value,
@@ -35,22 +35,20 @@ class SendVerificationCodeRequest extends FormRequest
      */
     public function rules(): array
     {
-        $username = $this->input('username', '');
-        $action = $this->input('action', '');
-
         return [
-            'usernameType' => ['bail', 'required', new Enum(VerificationUsernameType::class)],
             'action' => ['bail', 'required', 'string', new Enum(VerificationActionType::class)],
-            'username' => ['bail', 'required', 'string', new UsernameTypeRule(), ...$this->getActionTypeRules($username, $action)]
+            'username' => ['bail', 'required', 'string', new UsernameTypeRule(), ...$this->getActionTypeRules()]
         ];
     }
 
 
-    protected function getActionTypeRules(string $username, string $action): array
+    protected function getActionTypeRules(): array
     {
         $action = VerificationActionType::detectType($this->input('action', ''));
         $usernameType = $this->input('usernameType');
-
+        if (!$action || ! $usernameType) {
+            return [];
+        }
         $column = VerificationUsernameType::getColumn($usernameType);
 
         return $action === VerificationActionType::Register
@@ -77,6 +75,7 @@ class SendVerificationCodeRequest extends FormRequest
                 };
 
             },
+
         ];
     }
 
