@@ -3,6 +3,7 @@
 namespace Modules\Auth\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
+use http\Exception\RuntimeException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
@@ -28,12 +29,11 @@ class VerificationCodeController extends Controller
 
 
         $service = new VerificationCodeService();
-        $service->send($recipient , VerificationActionType::from($action) , VerificationUsernameType::from($recipientType));
+        $code = $service->handle($recipient, VerificationActionType::from($action), VerificationUsernameType::from($recipientType));
 
-        dd($service->getKey($action ,VerificationActionType::from($action) ));
+        $res = $service->Send($code['code'], $recipient, VerificationActionType::from($action));
 
 
-
-        return 'vlidated code';
+        return $res;
     }
 }

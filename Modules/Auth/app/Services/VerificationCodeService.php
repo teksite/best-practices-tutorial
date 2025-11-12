@@ -5,6 +5,7 @@ namespace Modules\Auth\Services;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Cache\RateLimiter;
 use Modules\Auth\Enums\VerificationActionType;
@@ -15,7 +16,7 @@ use RuntimeException;
 
 class VerificationCodeService
 {
-    protected int $length = 6;
+    protected int $length = 5;
     protected int $maxAttempts = 5;
     protected int $maxSendsPerHour = 10;
 
@@ -31,31 +32,29 @@ class VerificationCodeService
     /**
      * @throws RandomException
      */
-    public function send(int|string $recipient, VerificationActionType $type, VerificationUsernameType $way): void
+    public function handle(int|string $recipient, VerificationActionType $type, VerificationUsernameType $way): array
     {
         $key = $this->getKey($recipient, $type);
 
         $code = $this->generateCode();
         $this->storeCode($code, $key, $way);
 
-        switch ($way) {
-            case (VerificationUsernameType::Email):
-                $this->SendByEmail($code , $recipient);
-                break;
-            case (VerificationUsernameType::Phone):
-                $this->sendBySMS($code , $recipient);
-                break;
-            default:
-                throw new RuntimeException('Unknown verification method');
+        $payload = Cache::get($key);
+        $expiredAt = $payload['expired_at'];
 
-        }
+        return [
+            'code' => $code,
+            'expired_at' => $expiredAt,
+        ];
+
 
     }
 
     public function waitTime(int|string $recipient, VerificationActionType $type): int
     {
+        return 0;
         $limiterKey = "send-code:" . request()->ip();
-        if ($this->rateLimiter->tooManyAttempts($limiterKey, $this->maxSendsPerHour ))  return false;
+        if ($this->rateLimiter->tooManyAttempts($limiterKey, $this->maxSendsPerHour)) return false;
 
         $this->rateLimiter->hit($limiterKey, 3600);
 
@@ -65,16 +64,16 @@ class VerificationCodeService
         if (!$payload) return 0;
 
         $now = now();
-        $expiresAt = Carbon::parse($payload['expires_at']);
+        $expiredAt = Carbon::parse($payload['expired_at']);
         $nextTry = Carbon::parse($payload['next_try']);
 
-        if ($now->greaterThan($expiresAt)) {
+        if ($now->greaterThan($expiredAt)) {
             Cache::forget($key);
             return 0;
         }
 
         if ($now->lessThan($nextTry)) {
-           return $now->diffInSeconds($nextTry);
+            return $now->diffInSeconds($nextTry);
         }
 
         return 0;
@@ -89,7 +88,7 @@ class VerificationCodeService
      */
     public function getKey(int|string $recipient, VerificationActionType $type): string
     {
-        return "verification::" . md5($type->value."::".(string)$recipient);
+        return "verification::" . md5($type->value . "::" . (string)$recipient);
     }
 
     /**
@@ -111,9 +110,9 @@ class VerificationCodeService
         $payload = [
             'hash' => $hashed,
             'created_at' => Carbon::now()->toDateTimeString(),
-            'expires_at' => $this->calculateExpireTime($way)->toDateTimeString(),
+            'expired_at' => $this->calculateExpireTime($way)->toDateTimeString(),
             'attempts' => 0,
-            'next_try' =>$this->calculateNextTry($way)->toDateTimeString(),
+            'next_try' => $this->calculateNextTry($way)->toDateTimeString(),
         ];
 
         Cache::put($key, $payload, $this->calculateExpireTime($way));
@@ -122,15 +121,13 @@ class VerificationCodeService
     }
 
     /**
-     * @param int|string|User $identification
+     * @param int|string $recipient
      * @param VerificationActionType $type
-     * @param string|int $to
      * @return void
      */
-    public function forget(int|string|User $identification, VerificationActionType $type, string|int $to): void
+    public function forget(int|string $recipient, VerificationActionType $type): void
     {
-        $identification = $this->makeId($identification);
-        $key = $this->getKey($identification, $type, $to);
+        $key = $this->getKey($recipient, $type);
         Cache::forget($key);
     }
 
@@ -143,7 +140,7 @@ class VerificationCodeService
         if (!$payload) return false;
 
 
-        if (Carbon::now()->gt(Carbon::parse($payload['expires_at'])) || $payload['attempts'] >= $this->maxAttempts) {
+        if (Carbon::now()->gt(Carbon::parse($payload['expired_at'])) || $payload['attempts'] >= $this->maxAttempts) {
             Cache::forget($key);
             return false;
         }
@@ -158,7 +155,7 @@ class VerificationCodeService
         $payload['attempts'] = ($payload['attempts'] ?? 0) + 1;
 
 
-        Cache::put($key, $payload, Carbon::parse($payload['expires_at']));
+        Cache::put($key, $payload, Carbon::parse($payload['expired_at']));
 
         return false;
     }
@@ -177,6 +174,7 @@ class VerificationCodeService
             default => now(),
         };
     }
+
     public function calculateNextTry(VerificationUsernameType $type): Carbon
     {
 
@@ -187,22 +185,70 @@ class VerificationCodeService
         };
     }
 
-    protected function SendByEmail($code ,$to)
+    public function send(int|string $code, int|string $recipient, VerificationActionType $type): \Illuminate\Http\JsonResponse
+    {
+        $key = $this->getKey($recipient, $type);
+        $payload = Cache::get($key, null);
+        $expiredAt = $payload['expired_at'];
+
+        $res = match (VerificationUsernameType::detectType($recipient)) {
+            VerificationUsernameType::Email => $this->SendByEmail($code, $recipient, $expiredAt),
+            VerificationUsernameType::Phone => $this->sendBySMS($code, $recipient, $expiredAt),
+            default => throw new RuntimeException('Unknown verification method'),
+        };
+        if (!$res) {
+            $this->forget($recipient, $type);
+            return response()->json([
+                'errors' => [
+                    'error end sending code'
+                ],
+                'message' => 'failed',
+
+            ])->setStatusCode(422);
+        }
+
+        return response()->json([
+            'errors' => [],
+            'message' => 'success',
+        ])->setStatusCode(200);
+
+    }
+
+    public function SendByEmail($code, $to, $expired_at)
     {
         try {
+//            $response=Mail
+            $response->throw();
+            return $response->successful();
 
-            Log::info("send by email $code , $to");
         } catch (\Exception $e) {
-
+            return false;
         }
     }
-    protected function SendBySMS($code ,$to)
+
+    public function SendBySMS($code, $recipient, $expired_at): bool
     {
         try {
-            Log::info("send by SMS $code , $to");
-        } catch (\Exception $e) {
+            $url = "https://api.msgway.com/send";
+            $apiKey = "0f6c84f39517013ade943a46ffce20f6";
+            $response = Http::withHeaders([
+                'apiKey' => $apiKey,
+            ])->post($url, [
+                'mobile' => $recipient,
+                'method' => 'sms',
+                'templateID' => 3,
+                "params" => [
+                    (string)$code,
+                ]
+            ]);
 
+            $response->throw();
+            return $response->successful();
+
+        } catch (\Exception $e) {
+            return false;
         }
+
     }
 
 }
