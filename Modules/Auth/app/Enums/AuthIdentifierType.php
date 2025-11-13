@@ -2,12 +2,12 @@
 
 namespace Modules\Auth\Enums;
 
-enum VerificationUsernameType: string
+enum AuthIdentifierType: string
 {
     case Email = 'email';
     case Phone = 'phone';
 
-    public static function detectType(string $input): ?VerificationUsernameType
+    public static function detectType(string $input): ?AuthIdentifierType
     {
         if (filter_var($input, FILTER_VALIDATE_EMAIL)) {
             return self::Email;

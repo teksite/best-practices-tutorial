@@ -6,9 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Modules\Auth\Http\Requests\Auth\CheckUserRequest;
+use Modules\Auth\Http\Requests\Auth\RegisterRequest;
 use Modules\User\Models\User;
 
-class CheckUserController extends Controller
+class AuthenticationController extends Controller
 {
     public function checkUser(CheckUserRequest $request)
     {
@@ -22,5 +23,16 @@ class CheckUserController extends Controller
         return response()->json([
             'data'=>__('auth::validation.no_user_found')
         ])->setStatusCode(404);
+    }
+
+    public function register(RegisterRequest $request)
+    {
+
+//        $user=User::query()->create($request->validated());
+
+        return response()->json([
+            'message'=>__('auth::validation.register_success'),
+            'errors'=>[],
+        ])->setStatusCode(201);
     }
 }
