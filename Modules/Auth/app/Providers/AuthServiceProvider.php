@@ -160,12 +160,15 @@ class AuthServiceProvider extends ServiceProvider
     private function loadLimiters(): void
     {
 
-        RateLimiter::for('apiauth.check-user', function (Request $request) {
+        RateLimiter::for('api.auth.check-user', function (Request $request) {
             return app()->isLocal() ?:Limit::perMinute(10)->by($request->ip());
         });
 
         RateLimiter::for('api.auth.send-code', function (Request $request) {
-            return app()->isLocal() ?:Limit::perMinute(3)->by($request->ip());
+            return app()->isLocal() ?:Limit::perMinute(5)->by($request->ip());
+        });
+        RateLimiter::for('api.auth.verify-code', function (Request $request) {
+            return app()->isLocal() ?:Limit::perMinute(2)->by($request->ip());
         });
     }
 }

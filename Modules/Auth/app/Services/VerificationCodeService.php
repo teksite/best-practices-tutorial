@@ -146,7 +146,6 @@ class VerificationCodeService
             return false;
         }
 
-
         if (Hash::check($inputCode, $payload['hash'])) {
             Cache::forget($key);
             return true;

@@ -35,10 +35,16 @@ class SendVerificationCodeRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+
+       $rules =[
             'action' => ['bail', 'required', 'string', new Enum(VerificationActionType::class)],
-            'username' => ['bail', 'required', 'string', new UsernameTypeRule(), ...$this->getActionTypeRules()]
+            'username' => ['bail', 'required', 'string', new UsernameTypeRule(), ...$this->getActionTypeRules()],
+
         ];
+       if ($this->routeIs('api.v1.auth.verify-code')) {
+           $rules['code']=['bail' ,'required'];
+       }
+       return $rules;
     }
 
 

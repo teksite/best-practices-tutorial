@@ -32,4 +32,28 @@ class VerificationCodeController extends Controller
 
         return $service->Send($code['code'], $recipient, VerificationActionType::from($action));
     }
+
+    public function verify(SendVerificationCodeRequest $request)
+    {
+        $action = $request->validated('action');
+        $recipient = $request->validated('username');
+        $code = $request->validated('code');
+
+
+        $service = new VerificationCodeService();
+
+        if($service->verify($recipient,  VerificationActionType::from($action), $code)){
+            return response()->json([
+                'message' => 'success',
+                'errors' => [],
+            ])->setStatusCode(20);
+        }
+        return response()->json([
+            'message' => 'failed',
+            'errors' => [
+                'code'=>'wrong verification code',
+            ],
+        ])->setStatusCode(400);
+
+    }
 }
