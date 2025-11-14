@@ -8,6 +8,7 @@ return [
     'username_invalid_email'=> 'the :attribute is not a valid email address',
     'username_invalid_phone'=> 'the :attribute is not a valid phone number',
 
-    'register_success'=>'registered successfully',
+    'register_success'=>'the user is registered successfully',
     'invalid_token'=>'invalid token',
+    "wing_code"=>"wrong verification code",
 ];

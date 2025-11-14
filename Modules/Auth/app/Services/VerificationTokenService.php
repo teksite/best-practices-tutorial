@@ -2,22 +2,14 @@
 
 namespace Modules\Auth\Services;
 
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Cache\RateLimiter;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use Modules\Auth\Emails\VerificatrionCodeEmail;
 use Modules\Auth\Enums\VerificationActionType;
 use Modules\Auth\Enums\AuthIdentifierType;
-use Modules\User\Models\User;
-use Random\RandomException;
-use RuntimeException;
 
-class TokenService
+
+class VerificationTokenService
 {
     protected int $length = 100;
 
@@ -27,19 +19,19 @@ class TokenService
      * @param string|int $recipient
      * @return string
      */
-    public function createVerificationToken(VerificationActionType $action, string|int $recipient): string
+    public function createVerificationToken(VerificationActionType $action, string|int $recipient , array $identityParams): string
     {
+
         do {
             $token = Str::random($this->length);
-            $key = Cache::has($this->getKey($token));
+            $key = $this->getKey($token);
         } while (Cache::has($key));
-
         Cache::put($key, [
-            'action' => $action,
+            'identity' =>$this->makeIdentity($identityParams),
+            'action' => $action->value,
             'recipient' => $recipient,
-            'recipientType' => AuthIdentifierType::detectType($recipient),
-        ], now()->addMinutes(15));
-
+            'recipientType' => AuthIdentifierType::detectType($recipient)->value,
+        ], now()->addMinutes(10));
         return $token;
     }
 
@@ -47,28 +39,27 @@ class TokenService
      * @param string $token
      * @param array $recipients
      * @param VerificationActionType $action
-     * @return mixed
+     * @param array $identityParams
+     * @return int|array|null
      */
-    public function getToken(string $token, array $recipients, VerificationActionType $action): mixed
+    public function getToken(string $token, array $recipients, VerificationActionType $action,  array $identityParams): null|int|array
     {
         if (!Cache::has($this->getKey($token))) return null;
-
-        $payload = Cache::pull($this->getKey($token));
-
+        $payload = Cache::get($this->getKey($token));
         $cachedAction = $payload['action'] ?? null;
         $cachedRecipient = $payload['recipient'] ?? null;
         $cachedRecipientType = $payload['recipientType'] ?? null;
+        $cachedIdentity=$payload['identity'] ?? null;
 
-        if ($cachedAction || $cachedRecipient || $cachedRecipientType) return null;
 
+        if (!$cachedAction || !$cachedRecipient || !$cachedRecipientType || !$cachedIdentity) return null;
 
         $recipient = $recipients[$cachedRecipientType] ?? null;
-
         if (!$recipient ||
             ($cachedRecipient !== $recipient) ||
-            ($cachedAction !== $action->value)
+            ($cachedAction !== $action->value) ||
+            ($cachedIdentity !== $this->makeIdentity($identityParams))
         ) return null;
-
         return $payload;
     }
 
@@ -79,6 +70,17 @@ class TokenService
     public function getKey(string $token): string
     {
         return "verification::after_verify::$token";
+    }
+
+    public function forget($token): void
+    {
+        $key = $this->getKey($token);
+        Cache::forget($key);
+    }
+
+    public function makeIdentity(array $params): string
+    {
+        return hash('sha256', implode('::', $params));
     }
 
 }

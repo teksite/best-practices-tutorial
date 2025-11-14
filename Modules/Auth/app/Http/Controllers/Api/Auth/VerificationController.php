@@ -12,7 +12,7 @@ use Modules\Auth\Enums\VerificationActionType;
 use Modules\Auth\Enums\AuthIdentifierType;
 use Modules\Auth\Http\Requests\Auth\CheckUserRequest;
 use Modules\Auth\Http\Requests\Auth\SendVerificationCodeRequest;
-use Modules\Auth\Services\TokenService;
+use Modules\Auth\Services\VerificationTokenService;
 use Modules\Auth\Services\VerificationCodeService;
 use Modules\User\Models\User;
 use Random\RandomException;
@@ -21,7 +21,7 @@ use function Pest\Laravel\put;
 class VerificationController extends Controller
 {
 
-    public function __construct(private readonly VerificationCodeService $verificationCodeService ,private readonly TokenService $tokenService)
+    public function __construct(private readonly VerificationCodeService $verificationCodeService, private readonly VerificationTokenService $tokenService)
     {
     }
 
@@ -39,7 +39,6 @@ class VerificationController extends Controller
     }
 
 
-
     public function verify(SendVerificationCodeRequest $request)
     {
         $action = $request->validated('action');
@@ -51,13 +50,16 @@ class VerificationController extends Controller
             return response()->json([
                 'message' => 'success',
                 'errors' => [],
-                'token'=>$this->tokenService->createVerificationToken($action, $recipient)
+                'token' => $this->tokenService->createVerificationToken(VerificationActionType::from($action), $recipient,
+                    [
+                        $request->userAgent(), $request->ip()
+                    ])
             ])->setStatusCode(200);
         }
         return response()->json([
             'message' => 'failed',
             'errors' => [
-                'code' => 'wrong verification code',
+                'code' => 'auth::validation.wrong_code',
             ],
         ])->setStatusCode(400);
 

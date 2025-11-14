@@ -5,10 +5,13 @@ namespace Modules\Auth\Http\Requests\Auth;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 use Modules\Auth\Enums\VerificationActionType;
-use Modules\Auth\Services\TokenService;
+use Modules\Auth\Services\VerificationTokenService;
 
 class RegisterRequest extends FormRequest
 {
+
+    public ?string $recipientType = null;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -24,20 +27,19 @@ class RegisterRequest extends FormRequest
     {
         return [
             'name' => 'bail|required|string|between:2,100',
-            'email' => 'bail|required|string|email|max:100|unique:users',
+            'email' => 'bail|required|string|email|max:100|unique:users,email',
+            'phone' => 'bail|required|string|between:1,20|unique:users,phone',
             'password' => 'bail|required|string|confirmed|min:6',
-            'password_confirmation' => 'bail|required|string|same:password',
-            'phone' => 'bail|required|string|between:1,20',
             'token' => 'bail|required|string'
         ];
     }
 
-    public function after()
+    public function after(): array
     {
         return [fn(Validator $validator) => $this->checkToken($validator)];
     }
 
-    protected function checkToken(Validator $validator)
+    protected function checkToken(Validator $validator): void
     {
         if ($validator->errors()->isNotEmpty()) return;
 
@@ -45,20 +47,22 @@ class RegisterRequest extends FormRequest
 
         $token = $validatedData['token'];
         $email = $validatedData['email'];
-        $phone = $validatedData['token'];
+        $phone = $validatedData['phone'];
 
-        $tokenData = (new TokenService())->getToken([
+        $tokenData = (new VerificationTokenService())->getToken(
             $token,
-            [
-                'email' => $email,
-                'phone' => $phone
-            ],
-            VerificationActionType::Register
-        ]);
+            ['email' => $email, 'phone' => $phone],
+            VerificationActionType::Register,
+            [$this->userAgent(), $this->ip()]
 
-        if ($tokenData) {
-            $validator->errors()->add('token', 'auth::verify.invalid_token');
+        );
+
+        if (!$tokenData) {
+            $validator->errors()->add('token', __('auth::validation.invalid_token'));
+            return;
         }
+
+        $this->recipientType = $tokenData['recipientType'];
 
 
     }

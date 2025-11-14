@@ -11,7 +11,6 @@ use Modules\Auth\Traits\MustVerifyPhone as PhoneMethod;
 
 class User extends Authenticatable implements MustVerifyEmail , MustVerifyPhone
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable , PhoneMethod ;
 
     /**

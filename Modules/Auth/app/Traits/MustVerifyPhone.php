@@ -2,15 +2,16 @@
 
 namespace Modules\Auth\Traits;
 
-trait MustVerifyPhone {
+trait MustVerifyPhone
+{
     /**
      * Determine if the user has verified their phone number.
      *
      * @return bool
      */
-    public function hasVerifiedPhone()
+    public function hasVerifiedPhone(): bool
     {
-        return ! is_null($this->phone_verified_at);
+        return !is_null($this->phone_verified_at);
     }
 
     /**
@@ -18,7 +19,7 @@ trait MustVerifyPhone {
      *
      * @return bool
      */
-    public function markPhoneAsVerified()
+    public function markPhoneAsVerified(): bool
     {
         return $this->forceFill([
             'phone_verified_at' => $this->freshTimestamp(),
@@ -40,7 +41,7 @@ trait MustVerifyPhone {
      *
      * @return string
      */
-    public function getPhoneForVerification()
+    public function getPhoneForVerification(): string
     {
         return $this->phone;
     }
