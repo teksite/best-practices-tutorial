@@ -73,8 +73,9 @@ class VerificationTokenService
         return "verification::after_verify::$token";
     }
 
-    public function forget($token): void
+    public function forget(?String $token): void
     {
+        if ($token === null) return;
         $key = $this->getKey($token);
         Cache::forget($key);
     }

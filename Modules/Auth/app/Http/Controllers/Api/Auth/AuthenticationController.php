@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Route;
 use Modules\Auth\Actions\CreateUser;
 use Modules\Auth\Actions\AuthTokenAction;
+use Modules\Auth\Enums\AuthIdentifierType;
 use Modules\Auth\Http\Requests\Auth\CheckUserRequest;
+use Modules\Auth\Http\Requests\Auth\ForgotPasswordRequest;
 use Modules\Auth\Http\Requests\Auth\LoginRequest;
 use Modules\Auth\Http\Requests\Auth\RegisterRequest;
 use Modules\Auth\Services\VerificationTokenService;
@@ -18,7 +20,7 @@ use Modules\User\Transformers\UserResource;
 
 class AuthenticationController extends Controller
 {
-    public function __construct(private AuthTokenAction $authToken)
+    public function __construct(private readonly AuthTokenAction $authToken)
     {
     }
 
@@ -64,7 +66,15 @@ class AuthenticationController extends Controller
             return ApiResponse::failed(['server' => __('auth::validation.server_error')], status: 500);
         }
 
-        (new VerificationTokenService())->forget($request->validated('token'));
+
+        if($request->recipientType == AuthIdentifierType::Email) {
+            $user->markEmailAsVerified();
+        }
+        if($request->recipientType == AuthIdentifierType::Phone) {
+            $user->markPhoneAsVerified();
+        }
+
+        (new VerificationTokenService())->forget($request->validated('token' ,null));
 
         return ApiResponse::success([
             'user' => (new UserResource($user)),
@@ -76,6 +86,21 @@ class AuthenticationController extends Controller
             path: '/',
             domain: config('session.domain'),
         ));
+
+    }
+
+    public function forget(ForgotPasswordRequest $request)
+    {
+        try {
+            $user = $request->user;
+            $user->update(['password'=>$request->validated('password')]);
+        } catch (\Exception $exception) {
+            return ApiResponse::failed(['server' => __('auth::validation.server_error')], status: 500);
+        }
+
+        (new VerificationTokenService())->forget($request->validated('token'));
+
+        return ApiResponse::success([], 201);
 
     }
 

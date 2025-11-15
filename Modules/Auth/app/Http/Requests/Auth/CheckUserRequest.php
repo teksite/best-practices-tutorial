@@ -6,23 +6,12 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Validator;
 use Modules\Auth\Rules\UsernameTypeRule;
 
-class CheckUserRequest extends FormRequest
+class CheckUserRequest extends BaseAuthRequest
 {
-    /**
-     * Get the validation rules that apply to the request.
-     */
     public function rules(): array
     {
         return [
-            'username' => ['bail', 'required', 'string' , new UsernameTypeRule()],
+            'username' => ['bail', 'required', 'string', new UsernameTypeRule()],
         ];
-    }
-
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return true;
     }
 }

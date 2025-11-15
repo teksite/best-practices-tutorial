@@ -16,9 +16,13 @@ class ApiResponse
         return self::general($data,$errors, $status, $message);
     }
 
-    public static function general(array $data = [],array $errors=[], int $status = 200 , ?string $message ='failed'): JsonResponse
+    public static function general(array $data = [],array $errors=[], int $status = 200 , ?string $message =''): JsonResponse
     {
-        return response()->json(compact('message','errors','data','status'),$status);
+        return response()->json([
+            'message' => $message,
+            'errors'  => $errors,
+            'data'    => $data,
+        ], $status);
     }
 
 

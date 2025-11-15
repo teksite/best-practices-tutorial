@@ -14,6 +14,7 @@ use Modules\Auth\Http\Requests\Auth\CheckUserRequest;
 use Modules\Auth\Http\Requests\Auth\SendVerificationCodeRequest;
 use Modules\Auth\Services\VerificationTokenService;
 use Modules\Auth\Services\VerificationCodeService;
+use Modules\Main\Services\ApiResponse;
 use Modules\User\Models\User;
 use Random\RandomException;
 use function Pest\Laravel\put;
@@ -32,10 +33,19 @@ class VerificationController extends Controller
     {
         $action = $request->validated('action');
         $recipient = $request->validated('username');
+        $recipientType = AuthIdentifierType::detectType($recipient);
 
-        $code = $this->verificationCodeService->handle($recipient, VerificationActionType::from($action), AuthIdentifierType::detectType($recipient));
+        $code = $this->verificationCodeService->handle($recipient, VerificationActionType::from($action), $recipientType);
 
-        return $this->verificationCodeService->Send($code['code'], $recipient, VerificationActionType::from($action));
+        $response = $this->verificationCodeService->Send($code['code'], $recipient, VerificationActionType::from($action));
+
+        if (!$response) {
+            $this->verificationCodeService->forget($recipient, $recipientType);
+            return ApiResponse::failed(['unknown' => __('error end sending code')]);
+        }
+
+        return ApiResponse::success([]);
+
     }
 
 
@@ -47,21 +57,14 @@ class VerificationController extends Controller
 
 
         if ($this->verificationCodeService->verify($recipient, VerificationActionType::from($action), $code)) {
-            return response()->json([
-                'message' => 'success',
-                'errors' => [],
-                'token' => $this->tokenService->createVerificationToken(VerificationActionType::from($action), $recipient,
-                    [
-                        $request->userAgent(), $request->ip()
-                    ])
-            ])->setStatusCode(200);
+            $token = $this->tokenService->createVerificationToken(VerificationActionType::from($action), $recipient, [$request->userAgent(), $request->ip()]);
+
+            return ApiResponse::success([
+                'token' => $token
+            ]);
         }
-        return response()->json([
-            'message' => 'failed',
-            'errors' => [
-                'code' => 'auth::validation.wrong_code',
-            ],
-        ])->setStatusCode(400);
+        return ApiResponse::success([['code' => __('auth::validation.wrong_code'),],], 400);
+
 
     }
 

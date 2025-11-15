@@ -122,11 +122,12 @@ class VerificationCodeService
 
     /**
      * @param int|string $recipient
-     * @param VerificationActionType $type
+     * @param VerificationActionType|string $type
      * @return void
      */
-    public function forget(int|string $recipient, VerificationActionType $type): void
+    public function forget(int|string $recipient, VerificationActionType|string $type): void
     {
+        $type= $type instanceof VerificationActionType ? $type : VerificationActionType::detectType($type); ;
         $key = $this->getKey($recipient, $type);
         Cache::forget($key);
     }
@@ -197,33 +198,19 @@ class VerificationCodeService
         };
     }
 
-    public function send(int|string $code, int|string $recipient, VerificationActionType $type): \Illuminate\Http\JsonResponse
+    public function send(int|string $code, int|string $recipient, VerificationActionType $type): bool
     {
         $key = $this->getKey($recipient, $type);
         $payload = Cache::get($key, null);
         $expiredAt = $payload['expired_at'];
 
-        $res = match (AuthIdentifierType::detectType($recipient)) {
+        return match (AuthIdentifierType::detectType($recipient)) {
 
             AuthIdentifierType::Email => $this->SendByEmail($code, $recipient, $expiredAt),
             AuthIdentifierType::Phone => $this->sendBySMS($code, $recipient, $expiredAt),
             default => throw new RuntimeException('Unknown verification method'),
         };
-        if (!$res) {
-            $this->forget($recipient, $type);
-            return response()->json([
-                'errors' => [
-                    'error end sending code'
-                ],
-                'message' => 'failed',
 
-            ])->setStatusCode(422);
-        }
-
-        return response()->json([
-            'errors' => [],
-            'message' => 'success',
-        ])->setStatusCode(200);
 
     }
 
