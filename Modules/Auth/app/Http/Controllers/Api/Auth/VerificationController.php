@@ -3,21 +3,13 @@
 namespace Modules\Auth\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
-use http\Exception\RuntimeException;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Str;
 use Modules\Auth\Enums\VerificationActionType;
 use Modules\Auth\Enums\AuthIdentifierType;
-use Modules\Auth\Http\Requests\Auth\CheckUserRequest;
 use Modules\Auth\Http\Requests\Auth\SendVerificationCodeRequest;
 use Modules\Auth\Services\VerificationTokenService;
 use Modules\Auth\Services\VerificationCodeService;
 use Modules\Main\Services\ApiResponse;
-use Modules\User\Models\User;
 use Random\RandomException;
-use function Pest\Laravel\put;
 
 class VerificationController extends Controller
 {
@@ -44,7 +36,7 @@ class VerificationController extends Controller
             return ApiResponse::failed(['unknown' => __('error end sending code')]);
         }
 
-        return ApiResponse::success([]);
+        return ApiResponse::success();
 
     }
 

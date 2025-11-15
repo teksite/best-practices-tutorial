@@ -2,8 +2,7 @@
 
 namespace Modules\Auth\Http\Requests\Auth;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Validator;
+use Modules\Auth\Http\Requests\Base\BaseAuthRequest;
 use Modules\Auth\Rules\UsernameTypeRule;
 
 class CheckUserRequest extends BaseAuthRequest

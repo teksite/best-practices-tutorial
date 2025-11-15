@@ -2,9 +2,9 @@
 
 namespace Modules\Auth\Http\Requests\Auth;
 
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 use Modules\Auth\Enums\VerificationActionType;
+use Modules\Auth\Http\Requests\Base\BaseAuthRequest;
 use Modules\Auth\Rules\UsernameTypeRule;
 
 

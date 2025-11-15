@@ -83,7 +83,7 @@ class AuthenticationController extends Controller
         ], 201)->withCookie(cookie(
             name: 'x_web_token',
             value: $authToken,
-            minutes: 30 * 3600 * 24,
+            minutes: 30 * 60 * 24,
             path: '/',
             domain: config('session.domain'),
         ));
