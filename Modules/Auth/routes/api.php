@@ -16,6 +16,5 @@ Route::middleware([])->prefix('auth')->name('auth.')->group(function () {
 
 Route::middleware(['auth:sanctum'])->prefix('auth')->name('auth.')->group(function () {
     Route::get('who', [AuthenticationController::class ,'who'])->name('who')/*->middleware(['throttle:api.auth.who'])*/;
-    Route::get('verify', [AuthenticationController::class ,'who'])->name('who')/*->middleware(['throttle:api.auth.who'])*/;
 });
 

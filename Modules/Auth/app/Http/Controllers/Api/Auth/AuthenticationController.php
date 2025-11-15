@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Route;
 use Modules\Auth\Actions\CreateUser;
 use Modules\Auth\Actions\AuthTokenAction;
+use Modules\Auth\Actions\ResetUserPassword;
 use Modules\Auth\Enums\AuthIdentifierType;
 use Modules\Auth\Http\Requests\Auth\CheckUserRequest;
 use Modules\Auth\Http\Requests\Auth\ForgotPasswordRequest;
@@ -93,7 +94,7 @@ class AuthenticationController extends Controller
     {
         try {
             $user = $request->user;
-            $user->update(['password'=>$request->validated('password')]);
+            (new ResetUserPassword())->handle($user , $request->validated('password'));
         } catch (\Exception $exception) {
             return ApiResponse::failed(['server' => __('auth::validation.server_error')], status: 500);
         }
