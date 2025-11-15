@@ -132,9 +132,14 @@ class VerificationCodeService
     }
 
 
+    /**
+     * @param int|string $recipient
+     * @param VerificationActionType $type
+     * @param string $inputCode
+     * @return bool
+     */
     public function verify(int|string $recipient, VerificationActionType $type, string $inputCode): bool
     {
-
         $key = $this->getKey($recipient, $type);
         $payload = Cache::get($key, null);
 
@@ -151,9 +156,7 @@ class VerificationCodeService
 
         if ($payload['attempts'] > $this->maxAttempts) {
                   Cache::forget($key);
-//                $limiterKey = "send-code:".request()->ip();
-//                $this->rateLimiter->hit($limiterKey, 3600);
-//                Cache::put($key, $payload, $expiresAt);
+
             return false;
         }
 
@@ -224,7 +227,7 @@ class VerificationCodeService
 
     }
 
-    public function SendByEmail($code, $recipient, $expired_at)
+    public function SendByEmail($code, $recipient, $expired_at): bool
     {
         try {
             $res= Mail::to($recipient)->send(new VerificatrionCodeEmail($code ,$expired_at));

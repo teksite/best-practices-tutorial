@@ -20,7 +20,7 @@ enum AuthIdentifierType: string
         return null;
     }
 
-    public static function getColumn(string $input, bool $byValue = false): ?string
+    public static function getColumn(string|AuthIdentifierType $input, bool $byValue = false): ?string
     {
         if ($byValue) {
             return match (self::detectType($input)) {

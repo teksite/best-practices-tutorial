@@ -6,12 +6,13 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use Modules\Auth\Interfaces\Auth\MustVerifyPhone;
 use Modules\Auth\Traits\MustVerifyPhone as PhoneMethod;
 
 class User extends Authenticatable implements MustVerifyEmail , MustVerifyPhone
 {
-    use HasFactory, Notifiable , PhoneMethod ;
+    use HasFactory, Notifiable , PhoneMethod ,HasApiTokens ;
 
     /**
      * The attributes that are mass assignable.

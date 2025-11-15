@@ -17,6 +17,7 @@ class VerificationTokenService
     /**
      * @param VerificationActionType $action
      * @param string|int $recipient
+     * @param array $identityParams
      * @return string
      */
     public function createVerificationToken(VerificationActionType $action, string|int $recipient , array $identityParams): string
@@ -44,13 +45,13 @@ class VerificationTokenService
      */
     public function getToken(string $token, array $recipients, VerificationActionType $action,  array $identityParams): null|int|array
     {
+
         if (!Cache::has($this->getKey($token))) return null;
         $payload = Cache::get($this->getKey($token));
         $cachedAction = $payload['action'] ?? null;
         $cachedRecipient = $payload['recipient'] ?? null;
         $cachedRecipientType = $payload['recipientType'] ?? null;
         $cachedIdentity=$payload['identity'] ?? null;
-
 
         if (!$cachedAction || !$cachedRecipient || !$cachedRecipientType || !$cachedIdentity) return null;
 
