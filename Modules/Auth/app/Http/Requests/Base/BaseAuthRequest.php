@@ -73,20 +73,22 @@ class BaseAuthRequest extends FormRequest
      */
     protected function checkToken(string $username, string $token, VerificationActionType|string $action, Validator $validator): void
     {
-        $type = AuthIdentifierType::detectType($username);
+        $this->recipientType = $this->detectRecipientType($username);
+
+
         $action = $action instanceof VerificationActionType ? $action : VerificationActionType::detectType($action);
         $service = new VerificationTokenService();
-        $tokenData = $service->getToken(
-            $token,
-            [$type->value => $username],
-            $action,
-            [$this->userAgent(), $this->ip()]
-        );
-        if (!$tokenData || !is_array($tokenData)  || count($tokenData) < 1) {
+
+        $recipients = [
+            'phone' => $this->recipientType === AuthIdentifierType::Phone ? $username : ($validator->validated()['phone'] ?? null),
+            'email' => $this->recipientType === AuthIdentifierType::Email ? $username : ($validator->validated()['email'] ?? null),
+        ];
+        $identityParams = [$this->userAgent(), $this->ip()];
+
+        $tokenData = $service->getCheckedToken($token, $recipients, $action, $identityParams);
+        if (!$tokenData || !is_array($tokenData) || count($tokenData) < 1) {
             $validator->errors()->add('token', __('auth::validation.invalid_token'));
-            return;
         }
-        $this->recipientType = AuthIdentifierType::detectType($tokenData['recipientType'] ?? null);
     }
 
 

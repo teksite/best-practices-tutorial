@@ -28,9 +28,7 @@ class ForgotPasswordRequest extends BaseAuthRequest
 
             $data = $validator->validated();
             $username = $data['username'];
-
             $this->user = $this->findUser($username, $validator);
-
             if (!$this->user) return;
 
             $this->checkToken($username, $data['token'], VerificationActionType::Forget, $validator);

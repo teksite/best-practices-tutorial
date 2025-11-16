@@ -55,7 +55,7 @@ class VerificationCodeService
     public function waitTime(int|string $recipient, VerificationActionType $type ): int
     {
         $limiterKey = "send-code:" . request()->ip();
-        if ($this->rateLimiter->tooManyAttempts($limiterKey, $this->maxSendsPerHour)) return false;
+        if ($this->rateLimiter->tooManyAttempts($limiterKey, $this->maxSendsPerHour)) return 3600;
 
         $this->rateLimiter->hit($limiterKey, 3600);
 

@@ -49,7 +49,7 @@ class RegisterRequest extends FormRequest
         $email = $validatedData['email'];
         $phone = $validatedData['phone'];
 
-        $tokenData = (new VerificationTokenService())->getToken(
+        $tokenData = (new VerificationTokenService())->getCheckedToken(
             $token,
             ['email' => $email, 'phone' => $phone],
             VerificationActionType::Register,
