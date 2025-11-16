@@ -19,4 +19,5 @@ return [
     'verified_before'=>'the :attribute has been verified already',
     "verify_empty"=>"empty entries",
     "mismatch_record"=>"the :attribute does not match our records",
+    "user_not_verified"=>"your phone number is not verified",
 ];

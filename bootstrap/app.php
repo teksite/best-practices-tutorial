@@ -13,7 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->api(prepend: [
-           \Modules\Auth\Http\Middleware\DecryptAuthTokenMiddleware::class
+           \Modules\Auth\Http\Middleware\DecryptAuthTokenMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

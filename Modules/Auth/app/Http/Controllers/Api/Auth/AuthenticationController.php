@@ -21,7 +21,7 @@ use Modules\User\Transformers\UserResource;
 
 class AuthenticationController extends Controller
 {
-    public function __construct(private readonly AuthTokenAction $authAction, private VerificationTokenService $tokenServicee)
+    public function __construct(private readonly AuthTokenAction $authAction, private readonly VerificationTokenService $tokenServicee)
     {
     }
 
@@ -30,10 +30,10 @@ class AuthenticationController extends Controller
         $username = $request->validated('username');
         $user = User::query()->where('email', $username)->orWhere('phone', $username)->first();
         if ($user) {
-            return ApiResponse::success(message: 'user exists');
+            return ApiResponse::success(message: "there is a user with entered data");
         }
 
-        ApiResponse::failed(['username' => __('auth::validation.no_user_found')], status: 404);
+        return ApiResponse::failed(['username' => __('auth::validation.no_user_found')], status: 404);
     }
 
     public function register(RegisterRequest $request)
