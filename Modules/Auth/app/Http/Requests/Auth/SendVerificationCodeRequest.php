@@ -28,8 +28,8 @@ class SendVerificationCodeRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'action' => [ 'bail', 'required', 'string', new Enum(VerificationActionType::class) ],
-            'username' => [ 'bail', 'required', 'string', new UsernameTypeRule(), ...$this->usernameExistenceRule(), ],
+            'action' => ['bail', 'required', 'string', new Enum(VerificationActionType::class)],
+            'username' => ['bail', 'required', 'string', new UsernameTypeRule(), ...$this->usernameExistenceRule(),],
         ];
 
         if ($this->isVerificationRoute()) {
@@ -57,15 +57,18 @@ class SendVerificationCodeRequest extends FormRequest
     }
 
 
-
     public function after(): array
     {
-        return [fn(Validator $validator) => $this->checkWaitTime($validator)];
+        return [
+            fn(Validator $validator) => $this->checkLoginCondition($validator),
+            fn(Validator $validator) => $this->checkWaitTime($validator),
+        ];
     }
 
     protected function checkWaitTime(Validator $validator): void
     {
-        if ($validator->errors()->isNotEmpty() || $this->isVerificationRoute())   return;
+
+        if ($validator->errors()->isNotEmpty() || $this->isVerificationRoute()) return;
 
         $recipient = $this->input('username');
         $action = VerificationActionType::from($this->input('action'));
@@ -84,5 +87,23 @@ class SendVerificationCodeRequest extends FormRequest
     protected function isVerificationRoute(): bool
     {
         return $this->routeIs('api.v1.auth.verify-code');
+    }
+
+    protected function checkLoginCondition(Validator $validator): void
+    {
+        $actionType = VerificationActionType::detectType($this->input('action'));
+        $error=false;
+        $isLoing=auth()->guard('sanctum')->check();
+        if ($actionType === VerificationActionType::Verify && !$isLoing) {
+            $error=true;
+        }
+
+        if (($actionType === VerificationActionType::Register || $actionType === VerificationActionType::Login)  && $isLoing){
+            $error=true;
+
+        }
+        if ($error) $validator->errors()->add('credential' , __('auth::validation.wrong_action'));
+
+        return;
     }
 }

@@ -56,10 +56,9 @@ class VerificationTokenService
         $cachedIdentity=$payload['identity'] ?? null;
 
         $identifier=is_string($identityParams) ? $identityParams : $this->makeIdentity($identityParams);
-
         if (!$cachedAction || !$cachedRecipient || !$cachedRecipientType || !$cachedIdentity) return null;
-
         $recipient = $recipients[$cachedRecipientType] ?? null;
+
         if (!$recipient ||
             ($cachedRecipient !== $recipient) ||
             ($cachedAction !== $action->value) ||

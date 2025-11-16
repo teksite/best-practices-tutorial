@@ -26,10 +26,11 @@ class VerificationController extends Controller
         $action = $request->validated('action');
         $recipient = $request->validated('username');
         $recipientType = AuthIdentifierType::detectType($recipient);
+        $actionType = VerificationActionType::from($action);
 
-        $code = $this->verificationCodeService->handle($recipient, VerificationActionType::from($action), $recipientType);
+        $code = $this->verificationCodeService->handle($recipient, $actionType, $recipientType);
 
-        $response = $this->verificationCodeService->Send($code['code'], $recipient, VerificationActionType::from($action));
+        $response = $this->verificationCodeService->Send($code['code'], $recipient, $actionType);
 
         if (!$response) {
             $this->verificationCodeService->forget($recipient, $recipientType);
@@ -45,17 +46,18 @@ class VerificationController extends Controller
     {
         $action = $request->validated('action');
         $recipient = $request->validated('username');
+        $actionType = VerificationActionType::from($action);
         $code = $request->validated('code');
 
 
         if ($this->verificationCodeService->verify($recipient, VerificationActionType::from($action), $code)) {
             $token = $this->tokenService->createVerificationToken(VerificationActionType::from($action), $recipient, [$request->userAgent(), $request->ip()]);
-
+            $this->verificationCodeService->forget($recipient, $actionType);
             return ApiResponse::success([
                 'token' => $token
             ]);
         }
-        return ApiResponse::success([['code' => __('auth::validation.wrong_code'),],], 400);
+        return ApiResponse::failed(['code' => __('auth::validation.wrong_code')], status:403);
 
 
     }

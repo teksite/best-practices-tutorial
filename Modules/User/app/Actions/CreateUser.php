@@ -8,19 +8,20 @@ use Modules\User\Models\User;
 
 class CreateUser
 {
-    public function handle(RegisterRequest $request) {
+    /**
+     * @param RegisterRequest $request
+     * @return Model|User
+     */
+    public function handle(RegisterRequest $request): User
+    {
 
         $userData = $request->validated();
 
-        $user=User::query()->create($userData);
+        $user = User::query()->create($userData);
 
-        if($request->recipientType == AuthIdentifierType::Email->value) {
-            $user->markEmailAsVerified();
-        }
-        if($request->recipientType == AuthIdentifierType::Phone->value) {
-            $user->markPhoneAsVerified();
-        }
-
+        $verifyType = $request->recipientType->value;
+        (new MarkVerifyUser())->handle($user, $verifyType);
         return $user;
+
     }
 }

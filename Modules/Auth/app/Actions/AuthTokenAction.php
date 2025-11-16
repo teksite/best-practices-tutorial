@@ -15,4 +15,5 @@ class AuthTokenAction
         $token = $user->createToken($tokenName, expiresAt: now()->addDays($days))->plainTextToken;
         return $encryption ? Crypt::encrypt($token) : $token;
     }
+
 }

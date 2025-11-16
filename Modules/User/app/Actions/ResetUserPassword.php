@@ -12,7 +12,7 @@ class ResetUserPassword
      */
     public function handle(?User $user, string $password): User
     {
-        $user ??= auth('api')->user();
+        $user ??= auth('sanctum')->user();
 
         $user->update(['password' => $password]);
 

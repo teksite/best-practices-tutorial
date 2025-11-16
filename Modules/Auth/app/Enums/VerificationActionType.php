@@ -14,6 +14,7 @@ enum VerificationActionType: string
 
     public static function detectType(string $input): ?VerificationActionType
     {
+
         return match ($input) {
             self::Register->value => self::Register,
             self::Login->value => self::Login,

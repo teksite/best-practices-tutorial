@@ -3,7 +3,10 @@
 namespace Modules\Auth\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Log;
 use Modules\Auth\Actions\AuthTokenAction;
+use Modules\Auth\Http\Requests\Auth\VerifyRequest;
+use Modules\User\Actions\MarkVerifyUser;
 use Modules\User\Actions\ResetUserPassword;
 use Modules\Auth\Enums\AuthIdentifierType;
 use Modules\Auth\Http\Requests\Auth\CheckUserRequest;
@@ -18,7 +21,7 @@ use Modules\User\Transformers\UserResource;
 
 class AuthenticationController extends Controller
 {
-    public function __construct(private readonly AuthTokenAction $authToken)
+    public function __construct(private readonly AuthTokenAction $authAction, private VerificationTokenService $tokenServicee)
     {
     }
 
@@ -26,7 +29,10 @@ class AuthenticationController extends Controller
     {
         $username = $request->validated('username');
         $user = User::query()->where('email', $username)->orWhere('phone', $username)->first();
-        if ($user) return ApiResponse::success(message: 'user exists');
+        if ($user) {
+            return ApiResponse::success(message: 'user exists');
+        }
+
         ApiResponse::failed(['username' => __('auth::validation.no_user_found')], status: 404);
     }
 
@@ -35,12 +41,14 @@ class AuthenticationController extends Controller
 
         try {
             $user = (new CreateUser())->handle($request);
-            $authToken = $this->authToken->create($user);
+            $authToken = $this->authAction->create($user);
+            $this->tokenServicee->forget($request->validated('token'));
         } catch (\Exception $exception) {
+            Log::error($exception);
             return ApiResponse::failed(['server' => __('auth::validation.server_error')], status: 500);
         }
 
-        (new VerificationTokenService())->forget($request->validated('token'));
+        $this->tokenServicee->forget($request->validated('token'));
 
         return ApiResponse::success([
             'user' => (new UserResource($user)),
@@ -59,20 +67,22 @@ class AuthenticationController extends Controller
 
         try {
             $user = $request->user;
-            $authToken = $this->authToken->create($user);
+            $authToken = $this->authAction->create($user);
+
         } catch (\Exception $exception) {
+            Log::error($exception);
             return ApiResponse::failed(['server' => __('auth::validation.server_error')], status: 500);
         }
 
 
-        if($request->recipientType == AuthIdentifierType::Email) {
+        if ($request->recipientType == AuthIdentifierType::Email) {
             $user->markEmailAsVerified();
         }
-        if($request->recipientType == AuthIdentifierType::Phone) {
+        if ($request->recipientType == AuthIdentifierType::Phone) {
             $user->markPhoneAsVerified();
         }
 
-        (new VerificationTokenService())->forget($request->validated('token' ,null));
+        $this->tokenServicee->forget($request->validated('token'));
 
         return ApiResponse::success([
             'user' => (new UserResource($user)),
@@ -89,17 +99,35 @@ class AuthenticationController extends Controller
 
     public function forget(ForgotPasswordRequest $request)
     {
+
         try {
             $user = $request->user;
-            (new ResetUserPassword())->handle($user , $request->validated('password'));
+            (new ResetUserPassword())->handle($user, $request->validated('password'));
         } catch (\Exception $exception) {
+            Log::error($exception);
             return ApiResponse::failed(['server' => __('auth::validation.server_error')], status: 500);
         }
 
-        (new VerificationTokenService())->forget($request->validated('token'));
+        $this->tokenServicee->forget($request->validated('token'));
 
         return ApiResponse::success([], 201);
 
+    }
+
+    public function verify(VerifyRequest $request)
+    {
+        try {
+            $verifier = (new MarkVerifyUser());
+            $user = auth('sanctum')->user();
+            if ($request->validated('phone')) $verifier->handle($user, 'phone');
+            if ($request->validated('email')) $verifier->handle($user, 'email');
+            $this->tokenServicee->forget($request->validated('token'));
+
+            return ApiResponse::success(['user' => $user]);
+        } catch (\Exception $exception) {
+            Log::error($exception);
+            return ApiResponse::failed(['server' => __('auth::validation.server_error')], status: 500);
+        }
     }
 
 

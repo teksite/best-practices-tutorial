@@ -7,13 +7,16 @@ use Illuminate\Validation\Validator;
 use Modules\Auth\Enums\AuthIdentifierType;
 use Modules\Auth\Enums\VerificationActionType;
 use Modules\Auth\Rules\UsernameTypeRule;
-use Modules\Auth\Services\VerificationTokenService;
+use Modules\Auth\Traits\AuthRequestHelpers;
 use Modules\User\Models\User;
 
 class BaseAuthRequest extends FormRequest
 {
+    use AuthRequestHelpers;
+
     public ?User $user = null;
     public ?AuthIdentifierType $recipientType = null;
+    public ?VerificationActionType $actionType = null;
 
     /**
      * Determine if the user is authorized to make this request.
@@ -23,6 +26,11 @@ class BaseAuthRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->recipientType = AuthIdentifierType::detectType($this->input('username', null));
+    }
+
     /**
      * Get the validation rules that apply to the request.
      */
@@ -30,66 +38,19 @@ class BaseAuthRequest extends FormRequest
     {
         return [
             'username' => ['bail', 'required', 'string', new UsernameTypeRule()],
+            'token' => 'bail|required|string|max:255|min:5',
+
         ];
     }
 
-    /**
-     * @param string $username
-     * @return AuthIdentifierType
-     */
-    protected function detectRecipientType(string $username): AuthIdentifierType
+
+
+    public function after(): array
     {
-        return AuthIdentifierType::detectType($username);
-    }
-
-    /**
-     * @param string $username
-     * @param Validator $validator
-     * @return User|null
-     */
-    protected function findUser(string $username, Validator $validator): ?User
-    {
-        $column = AuthIdentifierType::getColumn($username, true);
-        if (is_null($column)) {
-            $validator->errors()->add('username', __('Invalid credentials recognization.'));
-            return null;
-        };
-
-        $user = User::query()->where($column, $username)->first();
-        if (!$user) {
-            $validator->errors()->add('username', __('Invalid credentials'));
-            return null;
-        }
-
-        return $user;
-    }
-
-
-    /**
-     * @param string $username
-     * @param string $token
-     * @param VerificationActionType|string $action
-     * @param Validator $validator
-     */
-    protected function checkToken(string $username, string $token, VerificationActionType|string $action, Validator $validator): void
-    {
-        $this->recipientType = $this->detectRecipientType($username);
-
-
-        $action = $action instanceof VerificationActionType ? $action : VerificationActionType::detectType($action);
-        $service = new VerificationTokenService();
-
-        $recipients = [
-            'phone' => $this->recipientType === AuthIdentifierType::Phone ? $username : ($validator->validated()['phone'] ?? null),
-            'email' => $this->recipientType === AuthIdentifierType::Email ? $username : ($validator->validated()['email'] ?? null),
+        return [
+            fn(Validator $validator) => $this->detectActionType($validator),
+            fn(Validator $validator) => $this->checkLoginCondition($validator),
         ];
-        $identityParams = [$this->userAgent(), $this->ip()];
-
-        $tokenData = $service->getCheckedToken($token, $recipients, $action, $identityParams);
-        if (!$tokenData || !is_array($tokenData) || count($tokenData) < 1) {
-            $validator->errors()->add('token', __('auth::validation.invalid_token'));
-        }
     }
-
 
 }
