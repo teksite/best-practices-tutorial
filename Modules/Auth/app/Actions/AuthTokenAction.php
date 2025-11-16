@@ -9,10 +9,10 @@ use Modules\User\Models\User;
 
 class AuthTokenAction
 {
-    public function create(User $user): string
+    public function create(User $user ,string $tokenName='x_web_token' , int $days =30 ,bool $encryption=true): string
     {
 
-        $token = $user->createToken('x_web_token', expiresAt: now()->addDays(30))->plainTextToken;
-        return Crypt::encrypt($token);
+        $token = $user->createToken($tokenName, expiresAt: now()->addDays($days))->plainTextToken;
+        return $encryption ? Crypt::encrypt($token) : $token;
     }
 }

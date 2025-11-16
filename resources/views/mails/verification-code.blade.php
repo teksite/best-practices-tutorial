@@ -1,10 +1,11 @@
 <x-mail::message>
-    # your verification code
-    ## {{$code}}
-    and is validated unit {{$expiredAt}}
+    # Hi
 
-    Your order has been shipped!
+    Your verification code for {{$type}} is
 
+    **{{$code}}**
+
+    and is validate until {{$expiredAt}}
 
 
     Thanks,<br>

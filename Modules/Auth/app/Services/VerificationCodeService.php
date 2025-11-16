@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Cache\RateLimiter;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use Modules\Auth\Emails\VerificatrionCodeEmail;
+use Modules\Auth\Emails\VerificationCodeEmail;
 use Modules\Auth\Enums\VerificationActionType;
 use Modules\Auth\Enums\AuthIdentifierType;
 use Modules\User\Models\User;
@@ -206,7 +206,7 @@ class VerificationCodeService
 
         return match (AuthIdentifierType::detectType($recipient)) {
 
-            AuthIdentifierType::Email => $this->SendByEmail($code, $recipient, $expiredAt),
+            AuthIdentifierType::Email => $this->SendByEmail($code, $recipient, $expiredAt , $type),
             AuthIdentifierType::Phone => $this->sendBySMS($code, $recipient, $expiredAt),
             default => throw new RuntimeException('Unknown verification method'),
         };
@@ -214,10 +214,10 @@ class VerificationCodeService
 
     }
 
-    public function SendByEmail($code, $recipient, $expired_at): bool
+    public function SendByEmail(string|int $code, string $recipient,string $expired_at ,VerificationActionType $type ): bool
     {
         try {
-            $res= Mail::to($recipient)->send(new VerificatrionCodeEmail($code ,$expired_at));
+            $res= Mail::to($recipient)->send(new VerificationCodeEmail($code ,$expired_at , $type));
            return true;
 
         } catch (\Exception $e) {
@@ -249,24 +249,6 @@ class VerificationCodeService
             return false;
         }
 
-    }
-
-
-    public function createVerificationToken($action ,$recipient): string
-    {
-
-        do {
-            $token = Str::random(60) . time();
-            $key=Cache::has("verification::after_verify::$token");
-        } while (Cache::has($key));
-
-        Cache::put($key, [
-            'action' => $action,
-            'recipient' => $recipient,
-            'recipientType' => AuthIdentifierType::detectType($recipient),
-        ], now()->addMinutes(15));
-
-        return $token;
     }
 
 }

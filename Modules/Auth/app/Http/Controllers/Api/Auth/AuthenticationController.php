@@ -3,12 +3,8 @@
 namespace Modules\Auth\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Route;
-use Modules\Auth\Actions\CreateUser;
 use Modules\Auth\Actions\AuthTokenAction;
-use Modules\Auth\Actions\ResetUserPassword;
+use Modules\User\Actions\ResetUserPassword;
 use Modules\Auth\Enums\AuthIdentifierType;
 use Modules\Auth\Http\Requests\Auth\CheckUserRequest;
 use Modules\Auth\Http\Requests\Auth\ForgotPasswordRequest;
@@ -16,6 +12,7 @@ use Modules\Auth\Http\Requests\Auth\LoginRequest;
 use Modules\Auth\Http\Requests\Auth\RegisterRequest;
 use Modules\Auth\Services\VerificationTokenService;
 use Modules\Main\Services\ApiResponse;
+use Modules\User\Actions\CreateUser;
 use Modules\User\Models\User;
 use Modules\User\Transformers\UserResource;
 

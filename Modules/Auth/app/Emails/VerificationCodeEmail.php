@@ -8,15 +8,16 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Modules\Auth\Enums\VerificationActionType;
 
-class VerificatrionCodeEmail extends Mailable
+class VerificationCodeEmail extends Mailable
 {
     use Queueable, SerializesModels;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(public string|int $code , public string $expiredAt)
+    public function __construct(public string|int $code , public string $expiredAt , public VerificationActionType $type)
     {
     }
 
@@ -35,6 +36,7 @@ class VerificatrionCodeEmail extends Mailable
             with: [
                 'code' => $this->code,
                 'expiredAt'=>$this->expiredAt,
+                'type'=>$this->type->value,
             ]
         );
     }

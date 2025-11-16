@@ -16,7 +16,7 @@ class VerificationTokenService
     /**
      * @param VerificationActionType $action
      * @param string|int $recipient
-     * @param array $identityParams
+     * @param array|string $identityParams
      * @return string
      */
     public function createVerificationToken(VerificationActionType $action, string|int $recipient , array|string $identityParams): string

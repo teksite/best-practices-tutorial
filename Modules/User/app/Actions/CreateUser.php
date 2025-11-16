@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Auth\Actions;
+namespace Modules\User\Actions;
 
 use Modules\Auth\Enums\AuthIdentifierType;
 use Modules\Auth\Http\Requests\Auth\RegisterRequest;
