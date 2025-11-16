@@ -16,8 +16,9 @@ Route::middleware([])->prefix('auth')->name('auth.')->group(function () {
 
 Route::middleware(['auth:sanctum'])->prefix('auth')->name('auth.')->group(function () {
     Route::post('check-user', [AuthenticationController::class ,'checkUser'])->middleware([EnsureUserVerifiedMiddleware::class])->name('check-user')/*->middleware(['throttle:api.auth.check-user'])*/;
-
     Route::get('who', [AuthenticationController::class ,'who'])->name('who')/*->middleware(['throttle:api.auth.who'])*/;
     Route::post('verify', [AuthenticationController::class ,'verify'])->name('verify')/*->middleware(['throttle:api.auth.who'])*/;
+    Route::post('change', [AuthenticationController::class ,'change'])->name('change')/*->middleware(['throttle:api.auth.who'])*/;
+
 });
 

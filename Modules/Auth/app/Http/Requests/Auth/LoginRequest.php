@@ -23,7 +23,6 @@ class LoginRequest extends BaseAuthRequest
     {
         return array_merge(parent::after(), [
             fn(Validator $validator) => $this->selectLoginType($validator),
-            fn(Validator $validator) => $this->findUser($validator),
         ]);
 
     }

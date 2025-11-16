@@ -78,6 +78,8 @@ trait AuthRequestHelpers
         if ($validator->errors()->isNotEmpty()) return;
         $validated = $validator->validated();
         $this->findUser($validator);
+
+        if ($validator->errors()->isNotEmpty()) return;
         $password = $validated['password'];
         if ($password && !Hash::check($password, $this->user->password)) {
             $validator->errors()->add('username', __('Invalid credentials'));
@@ -139,7 +141,7 @@ trait AuthRequestHelpers
         $isLogin = auth()->guard('sanctum')->check();
 
         if (
-            ($actionType === VerificationActionType::Verify && !$isLogin) ||
+            (in_array($actionType, [VerificationActionType::Verify, VerificationActionType::Change]) && !$isLogin) ||
             (in_array($actionType, [VerificationActionType::Register, VerificationActionType::Login]) && $isLogin)
         ) {
             $validator->errors()->add('credential', __('auth::validation.wrong_action'));
@@ -166,6 +168,7 @@ trait AuthRequestHelpers
                 $this->routeIs('api.v1.auth.login') => VerificationActionType::Login,
                 $this->routeIs('api.v1.auth.forget-password') => VerificationActionType::Forget,
                 $this->routeIs('api.v1.auth.verify') => VerificationActionType::Verify,
+                $this->routeIs('api.v1.auth.change') => VerificationActionType::Change,
                 default => null,
             };
         }
@@ -177,6 +180,10 @@ trait AuthRequestHelpers
 
     }
 
+    /**
+     * @param Validator $validator
+     * @return void
+     */
     public function detectColumnNull(Validator $validator): void
     {
         if ($validator->errors()->isNotEmpty()) return;

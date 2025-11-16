@@ -15,6 +15,9 @@ class SendVerificationCodeRequest extends FormRequest
 {
     public function authorize(): bool
     {
+        if (($this->routeIs('api.v1.auth.change') && !auth('sanctum')->check())){
+            return false;
+        }
         return true;
     }
 
@@ -51,7 +54,7 @@ class SendVerificationCodeRequest extends FormRequest
         $column = AuthIdentifierType::getColumn($usernameType);
 
         return match ($action) {
-            VerificationActionType::Register => [Rule::unique('users', $column)],
+            VerificationActionType::Register, VerificationActionType::Change => [Rule::unique('users', $column)],
             default => [Rule::exists('users', $column)],
         };
     }

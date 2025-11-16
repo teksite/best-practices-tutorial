@@ -5,6 +5,7 @@ namespace Modules\Auth\Http\Controllers\Api\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
 use Modules\Auth\Actions\AuthTokenAction;
+use Modules\Auth\Http\Requests\Auth\ChangeUserRequest;
 use Modules\Auth\Http\Requests\Auth\VerifyRequest;
 use Modules\User\Actions\MarkVerifyUser;
 use Modules\User\Actions\ResetUserPassword;
@@ -16,6 +17,7 @@ use Modules\Auth\Http\Requests\Auth\RegisterRequest;
 use Modules\Auth\Services\VerificationTokenService;
 use Modules\Main\Services\ApiResponse;
 use Modules\User\Actions\CreateUser;
+use Modules\User\Actions\UpdateUser;
 use Modules\User\Models\User;
 use Modules\User\Transformers\UserResource;
 
@@ -130,6 +132,22 @@ class AuthenticationController extends Controller
         }
     }
 
+    public function change(ChangeUserRequest $request)
+    {
+        try {
+           $user=(new UpdateUser())->handle($request);
+            $this->tokenServicee->forget($request->validated('token'));
+        } catch (\Exception $exception) {
+            Log::error($exception);
+            return ApiResponse::failed(['server' => __('auth::validation.server_error')], status: 500);
+        }
+
+        $this->tokenServicee->forget($request->validated('token'));
+
+        return ApiResponse::success([
+            'user' => (new UserResource($user)),
+        ], 201);
+    }
 
     public function who()
     {
