@@ -8,10 +8,8 @@ use Modules\Auth\Notifications\WelcomeNotification;
 use Modules\Main\Services\ApiResponse;
 
 Route::middleware([])->prefix('auth')->name('auth.')->group(function () {
-    Route::post('send-code', [VerificationController::class, 'send'])->name('send-code')/*->middleware(['throttle:api.auth.send-code'])*/
-    ;
-    Route::post('verify-code', [VerificationController::class, 'verify'])->name('verify-code')/*->middleware(['throttle:api.auth.verify-code'])*/
-    ;
+    Route::post('send-code', [VerificationController::class, 'send'])->name('send-code')/*->middleware(['throttle:api.auth.send-code'])*/;
+    Route::post('verify-code', [VerificationController::class, 'verify'])->name('verify-code')/*->middleware(['throttle:api.auth.verify-code'])*/;
     Route::post('register', [AuthenticationController::class, 'register'])->name('register')/*->middleware(['throttle:api.auth.verify-code'])*/
     ;
     Route::post('login', [AuthenticationController::class, 'login'])->name('login')/*->middleware(['throttle:api.auth.verify-code'])*/
@@ -35,7 +33,16 @@ Route::middleware([])->prefix('notification')->name('notification.')->group(func
 
     Route::get('send-welcome', function (\Illuminate\Http\Request $request) {
         $user = \Modules\User\Models\User::find(1);
-        $user->notify(new WelcomeNotification());
+        $res=$user->notify(new WelcomeNotification());
+        Http::withHeaders([
+            "Content-Type: text/plain" .
+            "Title: Unauthorized access detected" .
+            "Priority: urgent" .
+            "Tags: warning,skull",
+            'content' => 'Remote access to phils-laptop detected. Act right away.'
+        ])->post("https://ntfy.sh/lareon",[
+            'Remote access to phils-laptop detected. Act right away.'
+        ] );
         return ApiResponse::success();
     });
 });
