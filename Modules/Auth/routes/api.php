@@ -33,17 +33,22 @@ Route::middleware([])->prefix('notification')->name('notification.')->group(func
 
     Route::get('send-welcome', function (\Illuminate\Http\Request $request) {
         $user = \Modules\User\Models\User::find(1);
-        $res=$user->notify(new WelcomeNotification());
-        Http::withHeaders([
-            "Content-Type: text/plain" .
-            "Title: Unauthorized access detected" .
-            "Priority: urgent" .
-            "Tags: warning,skull",
-            'content' => 'Remote access to phils-laptop detected. Act right away.'
-        ])->post("https://ntfy.sh/lareon",[
-            'Remote access to phils-laptop detected. Act right away.'
-        ] );
-        return ApiResponse::success();
+//        $res=$user->notify(new WelcomeNotification());
+//        Http::withHeaders([
+//            "Content-Type: text/plain" .
+//            "Title: Unauthorized access detected" .
+//            "Priority: urgent" .
+//            "Tags: warning,skull",
+//            'content' => 'Remote access to phils-laptop detected. Act right away.'
+//        ])->post("https://ntfy.sh/lareon",[
+//            'Remote access to phils-laptop detected. Act right away.'
+//        ] );
+        try {
+            $user->notify(new WelcomeNotification());
+            return ApiResponse::success();
+        }catch (\Exception $e){
+            Log::error('notification error: ' . $e->getMessage());
+        }
     });
 });
 

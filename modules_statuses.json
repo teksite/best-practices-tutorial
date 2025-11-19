@@ -1,5 +1,6 @@
 {
     "Auth": true,
     "User": true,
-    "Main": true
+    "Main": true,
+    "TelegramBot": true
 }

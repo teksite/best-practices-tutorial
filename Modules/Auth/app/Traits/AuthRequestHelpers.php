@@ -127,6 +127,7 @@ trait AuthRequestHelpers
             $validator->errors()->add('token', __('auth::validation.invalid_token'));
             return;
         }
+        $this->user=User::query()->where(AuthIdentifierType::getColumn($username , true), $username)->first();
     }
 
 

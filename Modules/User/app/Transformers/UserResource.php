@@ -20,6 +20,7 @@ class UserResource extends JsonResource
             'updated_at'=>$this->updated_at,
             'email_verified_at'=>$this->email_verified_at,
             'phone_verified_at'=>$this->phone_verified_at,
+            'telegram_bot_register_command'=>$this->makeTelegramRegisterCommand()
         ];
     }
 }

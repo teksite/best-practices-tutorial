@@ -2,6 +2,7 @@
 
 namespace Modules\User\Models;
 
+use DefStudio\Telegraph\Models\TelegraphChat;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -10,9 +11,9 @@ use Laravel\Sanctum\HasApiTokens;
 use Modules\Auth\Interfaces\Auth\MustVerifyPhone;
 use Modules\Auth\Traits\MustVerifyPhone as PhoneMethod;
 
-class User extends Authenticatable implements MustVerifyEmail , MustVerifyPhone
+class User extends Authenticatable implements MustVerifyEmail, MustVerifyPhone
 {
-    use HasFactory, Notifiable , PhoneMethod ,HasApiTokens ;
+    use HasFactory, Notifiable, PhoneMethod, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -48,5 +49,22 @@ class User extends Authenticatable implements MustVerifyEmail , MustVerifyPhone
             'phone_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function telegramChats()
+    {
+        return $this->hasOne(TelegraphChat::class ,'id','telegraph_chat_id',);
+    }
+
+    public function makeTelegramRegisterCommand(): ?string
+    {
+        if ($this->telegraph_chat_id) return null;
+        $data = [
+            'id' => $this->id,
+            'email' => $this->email,
+            'timestamp' => now(),
+        ];
+        $token = encrypt(implode("::", $data));
+        return "/login {$token}";
     }
 }

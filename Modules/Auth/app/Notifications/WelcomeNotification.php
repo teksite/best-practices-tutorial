@@ -2,12 +2,14 @@
 
 namespace Modules\Auth\Notifications;
 
+use DefStudio\Telegraph\Facades\Telegraph;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Log;
 use Modules\Auth\Notifications\Channels\SmsChannel;
+use Modules\TelegramBot\Notifications\Channels\TelegramChannel;
 
 class WelcomeNotification extends Notification /*implements ShouldQueue*/
 {
@@ -27,7 +29,7 @@ class WelcomeNotification extends Notification /*implements ShouldQueue*/
      */
     public function via($notifiable): array
     {
-        return [/*'mail' ,*/ SMSChannel::class];
+        return [/*'mail' ,*//* SMSChannel::class ,*/TelegramChannel::class];
     }
 
     /**
@@ -52,6 +54,14 @@ class WelcomeNotification extends Notification /*implements ShouldQueue*/
             'message' => "$notifiable->name عزیز، به سایت laratek.net خوش آمدید. ",
         ];
     }
+
+    public function toTelegram($notifiable): array
+    {
+        return [
+            'message' =>"$notifiable->name عزیز، به سایت laratek.net خوش آمدید. ",
+        ];
+    }
+
 
 
 }
