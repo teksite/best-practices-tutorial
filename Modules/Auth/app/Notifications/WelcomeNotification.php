@@ -7,14 +7,19 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Modules\Auth\Notifications\Channels\SmsChannel;
+use Modules\Auth\Traits\PreferenceNotificationAware;
 use Modules\TelegramBot\Notifications\Channels\TelegramChannel;
+use Modules\User\Services\NotificationPreferenceService;
 
-class WelcomeNotification extends Notification /*implements ShouldQueue*/
+class WelcomeNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable ,PreferenceNotificationAware;
 
+    protected string $type='welcome';
+    protected array $force=['database'];
     public int $tries = 1;
 
     /**
@@ -24,12 +29,9 @@ class WelcomeNotification extends Notification /*implements ShouldQueue*/
     {
     }
 
-    /**
-     * Get the notification's delivery channels.
-     */
-    public function via($notifiable): array
+    public function databaseType(object $notifiable): string
     {
-        return [/*'mail' ,*//* SMSChannel::class ,*/TelegramChannel::class];
+        return 'welcome-msg';
     }
 
     /**
@@ -58,10 +60,16 @@ class WelcomeNotification extends Notification /*implements ShouldQueue*/
     public function toTelegram($notifiable): array
     {
         return [
-            'message' =>"$notifiable->name عزیز، به سایت laratek.net خوش آمدید. ",
+            'message' => "$notifiable->name عزیز، به سایت laratek.net خوش آمدید. ",
         ];
     }
 
+    public function toDatabase($notifiable): array
+    {
+        return [
+          'message'=>$notifiable->name,
+        ];
+    }
 
 
 }

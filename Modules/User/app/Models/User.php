@@ -67,4 +67,9 @@ class User extends Authenticatable implements MustVerifyEmail, MustVerifyPhone
         $token = encrypt(implode("::", $data));
         return "/login {$token}";
     }
+
+    public function notificationPreference()
+    {
+        return $this->hasOne(UserPreferences::class);
+    }
 }
