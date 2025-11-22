@@ -24,6 +24,7 @@ use Modules\User\Models\User;
 use Modules\User\Services\NotificationPreferenceService;
 use Modules\User\Transformers\NotificationCollection;
 use Modules\User\Transformers\NotificationPreferenceResource;
+use Modules\User\Transformers\NotificationResource;
 use Modules\User\Transformers\UserResource;
 use function PHPUnit\Framework\isInstanceOf;
 
@@ -33,17 +34,21 @@ class NotificationController extends Controller
     public function index(Request $request)
     {
         $status=$request->query('status' , 0);
-        if ($status ===0){
-            $notifications=auth()->user()->unreadNotifications();
-                dd($notifications);
+        $user= auth()->user();
+        if ($status == 0){
+            $notifications=$user->unreadNotifications;
 
-            return new NotificationCollection();
+        }else{
+            $notifications=$user->readNotifications;
+            $user->unreadNotifications->markAsRead();
+
         }
-        $user = auth()->user();
-        $pref = $this->service->getPreferences($user);
-        return new NotificationPreferenceResource(collect($pref));
+
+        return NotificationResource::collection($notifications);
 
     }
+
+
 
 
 }

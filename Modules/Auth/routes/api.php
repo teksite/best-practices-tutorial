@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Auth\Http\Controllers\Api\Auth\AuthenticationController;
 use Modules\Auth\Http\Controllers\Api\Auth\VerificationController;
+use Modules\Auth\Http\Controllers\Api\Notification\NotificationController;
 use Modules\Auth\Http\Controllers\Api\Notification\NotificationPreferencesController;
 use Modules\Auth\Http\Middleware\EnsureUserVerifiedMiddleware;
 use Modules\Auth\Notifications\WelcomeNotification;
@@ -34,7 +35,8 @@ Route::middleware(['auth:sanctum'])->prefix('auth')->name('auth.')->group(functi
 });
 
 Route::middleware(['auth:sanctum'])->prefix('notification')->name('notification.')->group(function () {
-    Route::get('/', [NotificationPreferencesController::class, 'index'])->name('index');
+    Route::get('/', [NotificationController::class, 'index'])->name('index');
+    Route::get('/', [NotificationController::class, 'index'])->name('index');
     Route::get('/preferences', [NotificationPreferencesController::class, 'index'])->name('index');
     Route::post('/preferences/update', [NotificationPreferencesController::class, 'update'])->name('change');
 
