@@ -101,7 +101,6 @@ trait AuthRequestHelpers
         $identityParams = [$this->userAgent(), $this->ip()];
         $service = new VerificationTokenService();
         $actionType = $this->actionType;
-
         if (is_null($token)) {
             $validator->errors()->add('token', __('auth::validation.invalid_token'));
             return;
@@ -120,13 +119,13 @@ trait AuthRequestHelpers
             $validator->errors()->add('username', __('auth::validation.username_invalid'));
             return;
         }
-
         $tokenData = $service->getCheckedToken($token, $recipients, $actionType, $identityParams);
 
         if (!$tokenData || !is_array($tokenData) || count($tokenData) < 1) {
             $validator->errors()->add('token', __('auth::validation.invalid_token'));
             return;
         }
+
         $this->user=User::query()->where(AuthIdentifierType::getColumn($username , true), $username)->first();
     }
 

@@ -22,6 +22,7 @@ class RegisterRequest extends BaseAuthRequest
             'phone' => 'bail|required|string|between:1,20|unique:users,phone',
             'password' => 'bail|required|string|confirmed|min:6|max:100',
             'token' => 'bail|required|string|max:255|min:5',
+            'username' => 'bail|required|string|max:255|min:5',
         ];
     }
 
