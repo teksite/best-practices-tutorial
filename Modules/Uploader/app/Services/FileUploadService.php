@@ -26,14 +26,14 @@ class FileUploadService
      * @return Model|Media
      * @throws \Exception
      */
-    public function upload(UploadedFile $file, ?string $filename = null, ?Model $relatedModel = null): Model|Media
+    public function upload(UploadedFile $file, ?string $filename = null, ?Model $relatedModel = null, bool $overWrite = false): Model|Media
     {
         $extension = $file->getClientOriginalExtension();
         $size = $file->getSize();
         $mime_type = $file->getMimeType();
         $originalName = $file->getClientOriginalName();
         if ($filename) {
-            $finalName = $this->fileName($filename, $extension);
+            $finalName = $this->fileName($filename, $extension, $overWrite);
             $path = $file->storeAs($this->directory, $finalName, [
                 'disk' => $this->disk
             ]);
@@ -67,19 +67,22 @@ class FileUploadService
 
     }
 
-    public function fileName(string $filename, string $extension): string
+    public function fileName(string $filename, string $extension, bool $overWrite = false): string
     {
         $newFileName = $filename . '.' . $extension;
         $path = Storage::disk($this->disk)->path($this->directory . DIRECTORY_SEPARATOR . $newFileName);
+
+        if ($overWrite){
+            Media::query()->firstWhere('path', $path)->delete();
+            return $newFileName;
+        }
         $i = 1;
         while (File::exists($path)) {
             $newFileName = $filename . '_' . $i . '.' . $extension;
             $path = Storage::disk($this->disk)->path($this->directory . DIRECTORY_SEPARATOR . $newFileName);
             $i++;
         }
-
         return $newFileName;
-
     }
 
 }
