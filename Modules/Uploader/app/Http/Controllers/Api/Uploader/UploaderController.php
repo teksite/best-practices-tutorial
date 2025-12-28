@@ -17,7 +17,9 @@ class UploaderController extends Controller
     function uploader(Request $request)
     {
 
-        $file =  FileUploadService::resolve(DiskType::PUBLIC)->upload($request->file('file') ,'123');
+        $file =  uploadFile($request->file('file') ,[
+            'disk' => DiskType::PUBLIC,
+        ]);
         return $file;
 
         return ApiResponse::success();

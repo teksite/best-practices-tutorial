@@ -14,16 +14,15 @@ use RuntimeException;
 
 class FileUploadService
 {
-    public function __construct(protected DiskType $disk = DiskType::LOCAL, protected ?string $directory = null)
+    public function __construct(protected DiskType $disk = DiskType::LOCAL)
     {
-        $this->directory = $directory ?: $this->defaultDirectory();
-
     }
 
-    public static function resolve(DiskType $disk = DiskType::LOCAL, ?string $directory = null): FileUploadService
+    public static function resolve(DiskType $disk = DiskType::LOCAL): FileUploadService
     {
-        return new self($disk ,$directory);
+        return new self($disk);
     }
+
     /**
      * @return string|null
      */
@@ -35,15 +34,27 @@ class FileUploadService
 
     /**
      * @param UploadedFile $file
+     * @param string|null $directory
      * @param string|null $filename
-     * @param Model|null $relatedModel
      * @param bool $overWrite
+     *
+     * @param Model|null $relatedModel
+     *
      * @return Model|Media
      * @throws Exception
      */
-    public function upload(UploadedFile $file, ?string $filename = null, ?Model $relatedModel = null, bool $overWrite = false): Model|Media
+    public function upload(
+        UploadedFile $file,
+        ?string      $directory,
+        ?string      $filename = null,
+        bool         $overWrite = false,
+        ?Model       $relatedModel = null
+    ): Model|Media
     {
-        $fileData = $this->storeFile($file, $filename, $overWrite);
+        $directory= $directory ?: $this->defaultDirectory();
+
+        $fileData = $this->storeFile($file, $directory,$filename, $overWrite);
+
 
         $media = Media::query()->create([
             'original_name' => $fileData['original_name'],
@@ -61,11 +72,11 @@ class FileUploadService
 
     }
 
-    public function resolveFileName(string $filename, string $extension, bool $overWrite = false): string
+    public function resolveFileName(string $filename,string $directory, string $extension, bool $overWrite = false): string
     {
-        $filename=str_replace(' ', '_', $filename);
-        $baseName ="{}.{$extension}";
-        $path = "{$this->directory}/{$baseName}";
+        $filename = str_replace(' ', '_', $filename);
+        $baseName = "{$filename}.{$extension}";
+        $path = "{$directory}/{$baseName}";
         $disk = Storage::disk($this->disk->value);
 
         if ($overWrite) {
@@ -85,16 +96,17 @@ class FileUploadService
      * @param UploadedFile $file
      * @param string|null $filename
      * @param bool $overWrite
+     *
      * @return array
      */
-    public function storeFile(UploadedFile $file, ?string $filename, bool $overWrite): array
+    public function storeFile(UploadedFile $file ,string $directory, ?string $filename, bool $overWrite): array
     {
         $extension = $file->getClientOriginalExtension();
         $originalName = $file->getClientOriginalName();
-        $finalName = $filename ? $this->resolveFileName($filename, $extension, $overWrite) : null;
+        $finalName = $filename ? $this->resolveFileName($filename ,$directory, $extension, $overWrite) : null;
         $path = $finalName
-            ? $file->storeAs($this->directory, $finalName, ['disk' => $this->disk->value]) :
-            $file->store($this->directory, ['disk' => $this->disk->value]);
+            ? $file->storeAs($directory, $finalName, ['disk' => $this->disk->value]) :
+            $file->store($directory, ['disk' => $this->disk->value]);
 
 
         return [
@@ -112,6 +124,7 @@ class FileUploadService
     /**
      * @param Model $relatedModel
      * @param Model|Media $media
+     *
      * @return void
      * @throws Exception
      */
@@ -125,19 +138,20 @@ class FileUploadService
 
     /**
      * @param string $path
+     *
      * @return mixed
      */
     public function deleteExistingMediaFromDB(string $path): mixed
     {
-       return Media::query()->where('disk',$this->disk->value)->where('path', $path)->delete();
+        return Media::query()->where('disk', $this->disk->value)->where('path', $path)->delete();
     }
 
     public function deleteExistingMediaFromPath(string $path): bool
     {
-       return Storage::disk($this->disk->value)->delete($path);
+        return Storage::disk($this->disk->value)->delete($path);
     }
 
-    public function delete(string $path):void
+    public function delete(string $path): void
     {
         if ($this->deleteExistingMediaFromPath($path)) $this->deleteExistingMediaFromDB($path);
     }
