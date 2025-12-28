@@ -20,8 +20,9 @@ return new class extends Migration {
             $table->string('extension');
             $table->unsignedBigInteger('size')->default(0);
             $table->string('disk');
-
             $table->timestamps();
+            $table->unique(['disk', 'path']);
+            $table->index(['disk', 'path']);
         });
     }
 

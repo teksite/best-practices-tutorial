@@ -17,7 +17,7 @@ class UploaderController extends Controller
     function uploader(Request $request)
     {
 
-        $file = (new FileUploadService(DiskType::LOCAL))->upload($request->file('file') ,'dfgdfgdfgfdgdf' ,auth()->user());
+        $file =  FileUploadService::resolve(DiskType::PUBLIC)->upload($request->file('file') ,'123');
         return $file;
 
         return ApiResponse::success();
