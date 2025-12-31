@@ -19,7 +19,7 @@ if (!function_exists('uploadFile')) {
      */
     function uploadFile(UploadedFile $file, array $options = [], null|Model $relatedModel = null): Media
     {
-        return FileUploadService::resolve($options['disk'] ?? DiskType::PUBLIC)->upload($file, $options['directory'] ?? null, $options['name'] ?? null, $options['overwrite'] ?? false, $relatedModel);
+        return FileUploadService::resolve($options['disk'] ?? DiskType::PUBLIC)->upload($file, $options['directory'] ?? null, $options['name'] ?? null, $options['overwrite'] ?? false, $relatedModel  ,$options['optimize']  ?? true);
     }
 }
 

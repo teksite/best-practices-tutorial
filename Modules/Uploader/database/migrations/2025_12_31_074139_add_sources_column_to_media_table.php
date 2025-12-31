@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('media_models', function (Blueprint $table) {
-            $table->foreignUlid('media_id')->constrained('media','id')->cascadeOnDelete();
-            $table->string('key' ,100)->nullable();
-            $table->morphs('model');
-
+        Schema::table('media', function (Blueprint $table) {
+            $table->json('sources')->nullable()->after('disk');
         });
     }
 
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('media_models');
+        Schema::table('media', function (Blueprint $table) {
+
+        });
     }
 };

@@ -15,7 +15,7 @@ class Media extends Model
     /**
      * The attributes that are mass assignable.
      */
-    protected $fillable = ['id', 'original_name', 'name', 'title', 'path', 'mime_type', 'extension', 'size', 'disk',];
+    protected $fillable = ['id', 'original_name', 'name', 'title', 'path', 'mime_type', 'extension', 'size', 'disk','sources'];
 
     protected static function boot()
     {
@@ -33,6 +33,7 @@ class Media extends Model
     {
         return [
             'disk' => DiskType::class,
+            'sources' => 'json',
         ];
     }
 
