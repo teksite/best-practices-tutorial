@@ -20,11 +20,8 @@ class UploaderController extends Controller
         $request->validate([
             'file' => 'required|file|mimes:jpeg,jpg,png,gif|between:3,2048',
         ]);
-        $result = Image::read($request->file)->toWebp(80);
-
-
         $file = uploadFile($request->file('file'), [
-            'disk' => DiskType::PUBLIC,
+            'disk' => DiskType::ARVAN_PUBLIC,
         ]);
         return $file;
 

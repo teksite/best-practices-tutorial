@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Intervention\Image\Laravel\Facades\Image;
 use Modules\Uploader\Enums\DiskType;
 use Modules\Uploader\Models\Media;
@@ -38,7 +39,7 @@ class FileUploadService
     public function defaultDirectory(): ?string
     {
         $now = Carbon::now();
-        return 'uploader' . DIRECTORY_SEPARATOR . $now->format('Y') . DIRECTORY_SEPARATOR . $now->format('m');;
+        return 'uploader' . '/' . $now->format('Y') . '/' . $now->format('m');;
     }
 
     /**
@@ -64,7 +65,7 @@ class FileUploadService
     {
         $directory = $directory ?: $this->defaultDirectory();
 
-        $fileData = $this->storeFile($file, $directory, $filename, $overWrite);
+        $fileData = $this->storeFile($file, $directory, $filename, $overWrite ,$optimize);
 
 
         $media = Media::query()->create([
@@ -75,7 +76,7 @@ class FileUploadService
             'extension' => $fileData['extension'],
             'size' => $fileData['size'],
             'disk' => $this->disk->value,
-            'sources' => $optimize ? $this->optimize($fileData, $directory) : [],
+            'sources' => $fileData['sources'] ?? [],
         ]);
         if ($relatedModel) {
             $this->attachToModel($relatedModel, $media);
@@ -98,7 +99,6 @@ class FileUploadService
         $baseName = "{$filename}.{$extension}";
         $path = "{$directory}/{$baseName}";
         $disk = Storage::disk($this->disk->value);
-
         if ($overWrite) {
             $this->deleteExistingMediaFromDB($path);
             return $baseName;
@@ -120,21 +120,20 @@ class FileUploadService
      *
      * @return array
      */
-    public function storeFile(UploadedFile $file, string $directory, ?string $filename, bool $overWrite): array
+    public function storeFile(UploadedFile $file, string $directory, ?string $filename, bool $overWrite, bool $optimize = true): array
     {
         $extension = $file->getClientOriginalExtension();
         $originalName = $file->getClientOriginalName();
-        $finalName = $filename ? $this->resolveFileName($filename, $directory, $extension, $overWrite) : null;
-        $path = $finalName
-            ? $file->storeAs($directory, $finalName, ['disk' => $this->disk->value]) :
-            $file->store($directory, ['disk' => $this->disk->value]);
+        $finalName = $filename ? $this->resolveFileName($filename, $directory, $extension, $overWrite) : time() . Str::random(32) . ".$extension";
+        $path = $file->storeAs($directory, $finalName, ['disk' => $this->disk->value]);
         return [
             'extension' => $extension,
             'size' => $file->getSize(),
             'mime_type' => $file->getMimeType(),
             'original_name' => $originalName,
             'path' => $path,
-            'name' => $finalName ?: pathinfo($path, PATHINFO_FILENAME),
+            'name' => $finalName,
+            'sources' => $optimize ? $this->optimize($file ,$finalName ,$directory ,$extension) : null,
         ];
     }
 
@@ -184,30 +183,22 @@ class FileUploadService
     }
 
     /**
-     * @param $fileData
-     * @param $directory
+     * @param UploadedFile $file
+     * @param string $fileName
+     * @param string $directory
+     * @param $extension
      *
      * @return array
      */
-    public function optimize($fileData, $directory): array
+    public function optimize(UploadedFile $file, string $fileName,string $directory ,$extension): array
     {
         $optimizedFiles = [];
-        if (in_array(strtolower($fileData['extension']), ['jpg', 'jpeg', 'png', 'gif', 'bmp'])) {
-            $disk = Storage::disk($this->disk->value);
-            $pathDirectory=$disk->path($directory);
-            $originalFilePath = $disk->path($fileData['path']);
-            $image = Image::read($originalFilePath);
-            $optimizedWithout=$pathDirectory.'/'.$fileData['name'].'.'.$fileData['extension'];
-            $image->toWebp(80)->save($optimizedWithout.'.webp');
-            $optimizedFiles['web']=$optimizedWithout.'.webp';
+        if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif', 'bmp'])) {
+            $image=Image::read($file);
+            $imageWebP=$image->toWebp(80);
+            $optimizedFiles[] = $file->storeAs($directory, "$fileName.webp", ['disk' => $this->disk->value]);
 
-            foreach ([100,200 ,400 ,900] as $size) {
-                if ($image->width() > $size) {
-                    $image->scaleDown($size)->toWebp(80)->save($optimizedWithout.'-'.$size.'.webp');
-                    $optimizedFiles[$size]=$optimizedWithout.'-'.$size.'.webp';
-                }
-            }
-        }
+       }
         return $optimizedFiles;
 
     }
