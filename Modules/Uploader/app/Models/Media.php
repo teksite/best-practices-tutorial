@@ -24,7 +24,6 @@ class Media extends Model
             if (Storage::disk($media->disk)->exists($media->path)) {
                 $result = Storage::disk($media->disk)->delete($media->path);
                 if (!$result) return false;
-
             }
             return true;
         });

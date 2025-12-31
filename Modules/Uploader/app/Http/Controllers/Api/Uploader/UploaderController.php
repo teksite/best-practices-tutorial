@@ -16,7 +16,9 @@ class UploaderController extends Controller
      */
     function uploader(Request $request)
     {
-
+        $request->validate([
+            'file' => 'required|file|mimes:jpeg,jpg,png,gif|between:3,2048'
+        ]);
         $file =  uploadFile($request->file('file') ,[
             'disk' => DiskType::PUBLIC,
         ]);
