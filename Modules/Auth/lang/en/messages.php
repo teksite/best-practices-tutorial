@@ -6,6 +6,7 @@ return [
         'user_exist'=>'The user exists',
         'user_not_found'=>'The user does not exist',
         'contact_is_used_before'=>'the entered :attribute already use by another user or is not accepted by the system',
+        'invalid_token'=>'invalid token, please try again',
     ],
     'verification_code' => [
         'wait'=>'you can retry in :seconds seconds',

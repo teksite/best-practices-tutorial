@@ -83,7 +83,8 @@ trait UserAuthRequestTrait
             $validator->errors()->add($contactAltType->value, trans('auth::messages.auth.contact_is_used_before' , ['attribute' => $contactAltType->value]));
             return;
         }
-        $this->contactAltType = DetectContactType::handle($this->input('contact_alt'));
+
+        $this->contactAltType = $contactAltType;
         $this->contactAltValue = NormalizeContact::handle($this->input('contact_alt'));
         return;
 

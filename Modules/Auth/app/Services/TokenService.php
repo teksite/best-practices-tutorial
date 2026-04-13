@@ -58,9 +58,8 @@ class TokenService
      */
     public function verify(string $token, string $contact, VerificationActionType $action): bool
     {
-        $token = Cache::get($this->getOrCreateKey($token));
-
-        if (is_null($token) || ($token['contact'] ?? null) !== $contact || ($token['action'] ?? null) !== $action) return false;
+        $reservedToken = Cache::get($this->getOrCreateKey($token));
+        if (is_null($reservedToken) || ($reservedToken['contact'] ?? null) !== $contact || ($reservedToken['action'] ?? null) !== $action) return false;
 
         return true;
     }
