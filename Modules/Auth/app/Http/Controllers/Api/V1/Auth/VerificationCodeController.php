@@ -9,13 +9,13 @@ use Modules\Auth\Enums\VerificationActionType;
 use Modules\Auth\Http\Requests\SendVerificationCodeRequest;
 use Modules\Auth\Http\Requests\VerifyVerificationCodeRequest;
 use Modules\Auth\Services\SendCodeService;
-use Modules\Auth\Services\TokenService;
+use Modules\Auth\Services\VerificationTokenService;
 use Modules\Auth\Services\VerificationCodeService;
 use Modules\Main\Services\ResponseJson;
 
 class VerificationCodeController extends Controller
 {
-    public function __construct(protected VerificationCodeService $codeService, protected SendCodeService $sendService, protected TokenService $tokenService)
+    public function __construct(protected VerificationCodeService $codeService, protected SendCodeService $sendService, protected VerificationTokenService $tokenService)
     {
     }
 
@@ -48,7 +48,7 @@ class VerificationCodeController extends Controller
 
         $token = $this->tokenService->create($contact, $actionType);
 
-        ResponseJson::success(['token' => $token], trans('auth::messages.verification_code.sent_successfully'));
+        return ResponseJson::success(['token' => $token], trans('auth::messages.verification_code.sent_successfully'));
 
 
     }

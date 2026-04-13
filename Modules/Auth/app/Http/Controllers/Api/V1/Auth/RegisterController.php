@@ -4,19 +4,20 @@ namespace Modules\Auth\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Modules\Auth\Enums\ContactType;
 use Modules\Auth\Http\Requests\RegisterRequest;
-use Modules\Auth\Http\Requests\SendVerificationCodeRequest;
-use Modules\Auth\Services\TokenService;
+use Modules\Auth\Services\AuthTokenService;
+use Modules\Auth\Services\VerificationTokenService;
 use Modules\Main\Services\ResponseJson;
 use Modules\User\Logic\UserLogic;
 use Modules\User\Transformers\UserResource;
 
 class RegisterController extends Controller
 {
-    public function __construct(protected TokenService $tokenService, protected UserLogic $Logic)
+    public function __construct(protected VerificationTokenService $verificationTokenService , protected AuthTokenService $authService, protected UserLogic $Logic)
     {
     }
 
@@ -47,7 +48,7 @@ class RegisterController extends Controller
         try {
             $user = DB::transaction(function () use ($data, $contactType, $contactAltType, $contactAltValue, $token) {
                 $user = $this->Logic->register($data);
-                $this->tokenService->forget($token);
+                $this->verificationTokenService->forget($token);
                 return $user;
             });
 
@@ -56,7 +57,13 @@ class RegisterController extends Controller
 
 
             if (!!$user) {
-                return ResponseJson::Success(['user' => UserResource::make($user)], trans('main::messages.global.create_success', ['attribute' => __('user')]));
+                $apiToken =  $this->authService->create($user);
+
+                return ResponseJson::Success([
+                    'user'  => UserResource::make($user),
+                    'token' => $this->authService->create($user),
+                ], trans('main::messages.global.create_success', ['attribute' => __('user')]))
+                    ->withCookie(cookie('x_web_token', $apiToken , 24*28*60 ,config('session.domain'),null,true ,true));
             }
             throw new \Exception(trans('main::messages.global.create_failed', ['attribute' => __('user')]));
         } catch (\Throwable $exception) {

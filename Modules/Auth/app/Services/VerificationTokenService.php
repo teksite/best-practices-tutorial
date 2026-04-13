@@ -11,7 +11,7 @@ use Modules\Auth\Enums\ContactType;
 use Modules\Auth\Enums\VerificationActionType;
 use function Laravel\Prompts\select;
 
-class TokenService
+class VerificationTokenService
 {
     /**
      * @param string $contact

@@ -14,7 +14,7 @@ class RegisterRequest extends BaseAuthRequest
      */
     public function authorize(): bool
     {
-        return !auth()->check();
+        return !auth('sanctum')->check();
     }
 
     /**

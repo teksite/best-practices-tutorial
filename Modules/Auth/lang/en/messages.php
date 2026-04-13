@@ -15,5 +15,6 @@ return [
         'failed'            => 'something went wrong to send the verification code, try again later',
         'not_valid'         => 'verification code is not valid',
         'valid'             => 'verification code is verified successfully',
+        'wrong_auth_token'  =>'The token code in not valid',
     ],
 ];
