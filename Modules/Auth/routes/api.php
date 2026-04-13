@@ -16,7 +16,7 @@ Route::prefix('v1/auth')->name('v1.auth.')->group(function () {
         Route::Post("verify", [VerificationCodeController::class, 'verify',])->name('verify')->middleware('throttle:send-verification-code');
     });
 
-    Route::middleware(['auth:sanctum' ])->group(function () {
+    Route::middleware(['auth:sanctum'])->group(function () {
         Route::get("/who-am-i", [WhoAmIController::class, 'whoAmI'])->name('who-am-i');
     });
 

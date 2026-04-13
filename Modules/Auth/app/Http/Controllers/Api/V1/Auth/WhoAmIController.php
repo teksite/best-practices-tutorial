@@ -16,7 +16,6 @@ class WhoAmIController extends Controller
 
     public function whoAmI(Request $request)
     {
-        dd(auth('sanctum')->check());
         return ResponseJson::Success(
             UserResource::make(auth('sanctum')->user()),
             ':)');

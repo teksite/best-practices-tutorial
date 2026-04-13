@@ -15,8 +15,7 @@ trait TokenCodeRequestTrait
 {
     public function checkToken(Validator $validator): void
     {
-        
-        if ($validator->fails()) return;
+        if ($validator->errors()->isNotEmpty()) return;
 
         $token = $this->input('token');
 
