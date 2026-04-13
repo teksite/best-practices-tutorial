@@ -21,17 +21,33 @@ class TokenService
     public function create(string $contact, VerificationActionType $action): string
     {
         do {
-            $token = Str::random(60);
-        } while (Cache::has("verification::after_verify::token::" . $token));
+            $token = $this->generateToken();
+        } while (Cache::has($this->getOrCreateKey($token)));
 
-        Cache::put('verification::after_verify::token::' . $token, [
+        Cache::put($this->getOrCreateKey($token), [
             'contact' => $contact,
             'action'  => $action,
 
         ], now()->addMinutes(10));
-
         return $token;
+    }
 
+    /**
+     * @param int|null $length
+     * @return string
+     */
+    public function generateToken(?int $length = 60): string
+    {
+        return Str::random($length);
+    }
+
+    /**
+     * @param string $token
+     * @return string
+     */
+    public function getOrCreateKey(string $token): string
+    {
+        return "verification::after_verify::token::" . $token;
     }
 
     /**
@@ -42,11 +58,20 @@ class TokenService
      */
     public function verify(string $token, string $contact, VerificationActionType $action): bool
     {
-        $token = Cache::get("verification::after_verify::token::" . $token);
+        $token = Cache::get($this->getOrCreateKey($token));
 
         if (is_null($token) || ($token['contact'] ?? null) !== $contact || ($token['action'] ?? null) !== $action) return false;
 
         return true;
+    }
+
+    /**
+     * @param string $token
+     * @return void
+     */
+    public function forget(string $token): void
+    {
+        Cache::forget($this->getOrCreateKey($token));
     }
 }
 

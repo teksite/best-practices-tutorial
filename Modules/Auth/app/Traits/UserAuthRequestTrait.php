@@ -14,9 +14,13 @@ use Modules\User\Models\User;
 trait UserAuthRequestTrait
 {
 
-    public ContactType|null $contactType = null;
     public VerificationActionType|null $actionType = null;
+    public ContactType|null $contactType = null;
+
     public string|null $contactValue = null;
+    public ContactType|null $contactAltType = null;
+
+    public string|null $contactAltValue = null;
 
 
     /**
@@ -53,9 +57,10 @@ trait UserAuthRequestTrait
         $isUserExist = User::query()->where($contactField, $contact)->exists(); //true , false
 
         if ($action === VerificationActionType::REGISTER->value && $isUserExist) {
-            $validator->errors()->add($contactField, trans('auth::messages.auth.user_exist'));
+            $validator->errors()->add($contactField, trans('auth::messages.auth.contact_is_used_before'));
             return;
         }
+
         if ($action === VerificationActionType::LOGIN->value && !$isUserExist) {
             $validator->errors()->add($contactField, trans('auth::messages.auth.user_not_found'));
             return;
@@ -73,12 +78,14 @@ trait UserAuthRequestTrait
 
         $contactAltType= $contactType === ContactType::PHONE ? ContactType::EMAIL : ContactType::PHONE;
 
-        'contact' => ['bail', 'required', 'string', 'min:5', 'max:100', new ContactCheckRule],
-
-        if (is_null($this->contactType) || is_null($this->contactValue)) {
-            $validator->errors()->add('overall', trans('auth::messages.auth.troubles'));
+        $existenceUserByAltContact = User::query()->where($contactAltType->value, $contactValue)->exists();
+        if ($existenceUserByAltContact) {
+            $validator->errors()->add($contactAltType->value, trans('auth::messages.auth.contact_is_used_before' , ['attribute' => $contactAltType->value]));
             return;
         }
+        $this->contactAltType = DetectContactType::handle($this->input('contact_alt'));
+        $this->contactAltValue = NormalizeContact::handle($this->input('contact_alt'));
+        return;
 
     }
 }
