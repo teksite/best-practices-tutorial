@@ -46,6 +46,32 @@ trait UserAuthRequestTrait
      * @param Validator $validator
      * @return void
      */
+    protected function appendAltContactData(Validator $validator): void
+    {
+        if ($validator->errors()->isNotEmpty()) return;
+
+        if (is_null($this->contactType) || is_null($this->contactValue)) {
+            $validator->errors()->add('overall', trans('auth::messages.auth.troubles'));
+            return;
+        }
+
+        $contactAltType= $this->contactType === ContactType::PHONE ? ContactType::EMAIL : ContactType::PHONE;
+
+        $existenceUserByAltContact = User::query()->where($contactAltType->value,  $this->contactValue)->exists();
+        if ($existenceUserByAltContact) {
+            $validator->errors()->add($contactAltType->value, trans('auth::messages.auth.contact_is_used_before' , ['attribute' => $contactAltType->value]));
+            return;
+        }
+
+        $this->contactAltType = $contactAltType;
+        $this->contactAltValue = NormalizeContact::handle($this->input('contact_alt'));
+        return;
+    }
+
+    /**
+     * @param Validator $validator
+     * @return void
+     */
     protected function checkExistenceContactCondition(Validator $validator): void
     {
         if ($validator->errors()->isNotEmpty()) return;
@@ -57,7 +83,7 @@ trait UserAuthRequestTrait
         $isUserExist = User::query()->where($contactField, $contact)->exists(); //true , false
 
         if ($action === VerificationActionType::REGISTER->value && $isUserExist) {
-            $validator->errors()->add($contactField, trans('auth::messages.auth.contact_is_used_before'));
+            $validator->errors()->add($contactField, trans('auth::messages.auth.contact_is_used_before', ['attribute' => $contactField]));
             return;
         }
 
@@ -68,25 +94,4 @@ trait UserAuthRequestTrait
         }
     }
 
-
-    protected function appendAltContactData(Validator $validator): void
-    {
-        if ($validator->errors()->isNotEmpty()) return;
-
-        $contactType = $this->contactType;
-        $contactValue = $this->contactValue;
-
-        $contactAltType= $contactType === ContactType::PHONE ? ContactType::EMAIL : ContactType::PHONE;
-
-        $existenceUserByAltContact = User::query()->where($contactAltType->value, $contactValue)->exists();
-        if ($existenceUserByAltContact) {
-            $validator->errors()->add($contactAltType->value, trans('auth::messages.auth.contact_is_used_before' , ['attribute' => $contactAltType->value]));
-            return;
-        }
-
-        $this->contactAltType = $contactAltType;
-        $this->contactAltValue = NormalizeContact::handle($this->input('contact_alt'));
-        return;
-
-    }
 }

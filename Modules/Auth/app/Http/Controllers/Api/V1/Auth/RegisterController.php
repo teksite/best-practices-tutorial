@@ -31,13 +31,12 @@ class RegisterController extends Controller
 
         $data = [
             'name'                 => $name,
-            'password'             => $password, // Hash password
+            'password'             => $password,
             $contactType->value    => $contactValue,
             $contactAltType->value => $contactAltValue,
         ];
-
         try {
-            DB::transaction(function () use ($data, $contactType, $contactAltType, $contactAltValue, $token) {
+            $user = DB::transaction(function () use ($data, $contactType, $contactAltType, $contactAltValue, $token) {
 
                 $user = User::query()->create($data);
 
@@ -47,19 +46,23 @@ class RegisterController extends Controller
                     $user->markPhoneAsUnverified();
                 }
 
-                // TODO: Implement sending verification email/phone functionality
-                // Example: dispatch(new SendVerificationNotification($user, $contactType));
-
                 $this->tokenService->forget($token);
+                return $user;
 
+            });
+
+            // TODO: Implement sending verification email/phone functionality
+            // Example: dispatch(new SendVerificationNotification($user, $contactType));
+
+            if (!!$user) {
                 return response()->json([
                     'errors'  => [],
                     'message' => 'User created successfully.',
                     'data'    => ['user' => $user->only('id', 'name', 'email', 'phone')],
                     // Return only necessary fields
                 ]);
-
-            });
+            }
+            throw new \Exception('User not created');
         } catch (\Throwable $exception) {
             Log::error($exception);
             return response()->json([
