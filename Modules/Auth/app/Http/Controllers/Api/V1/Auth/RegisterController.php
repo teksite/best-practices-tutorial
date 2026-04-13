@@ -10,11 +10,13 @@ use Modules\Auth\Enums\ContactType;
 use Modules\Auth\Http\Requests\RegisterRequest;
 use Modules\Auth\Http\Requests\SendVerificationCodeRequest;
 use Modules\Auth\Services\TokenService;
-use Modules\User\Models\User;
+use Modules\Main\Services\ResponseJson;
+use Modules\User\Logic\UserLogic;
+use Modules\User\Transformers\UserResource;
 
 class RegisterController extends Controller
 {
-    public function __construct(protected TokenService $tokenService)
+    public function __construct(protected TokenService $tokenService, protected UserLogic $Logic)
     {
     }
 
@@ -35,43 +37,36 @@ class RegisterController extends Controller
             $contactType->value    => $contactValue,
             $contactAltType->value => $contactAltValue,
         ];
+
+        if ($contactType === ContactType::EMAIL) {
+            $data['email_verified_at'] = now();
+        } elseif ($contactType === ContactType::PHONE) {
+            $data['phone_verified_at'] = now();
+        }
+
         try {
             $user = DB::transaction(function () use ($data, $contactType, $contactAltType, $contactAltValue, $token) {
-
-                $user = User::query()->create($data);
-
-                if ($contactType === ContactType::EMAIL) {
-                    $user->markEmailAsVerified();
-                } else {
-                    $user->markPhoneAsUnverified();
-                }
-
+                $user = $this->Logic->register($data);
                 $this->tokenService->forget($token);
                 return $user;
-
             });
 
             // TODO: Implement sending verification email/phone functionality
             // Example: dispatch(new SendVerificationNotification($user, $contactType));
 
+
             if (!!$user) {
-                return response()->json([
-                    'errors'  => [],
-                    'message' => 'User created successfully.',
-                    'data'    => ['user' => $user->only('id', 'name', 'email', 'phone')],
-                    // Return only necessary fields
-                ]);
+                return ResponseJson::Success(['user' => UserResource::make($user)], trans('main::messages.global.create_success', ['attribute' => __('user')]));
             }
-            throw new \Exception('User not created');
+            throw new \Exception(trans('main::messages.global.create_failed', ['attribute' => __('user')]));
         } catch (\Throwable $exception) {
+
             Log::error($exception);
-            return response()->json([
-                'errors'  => [
-                    'server_error' => 'An internal server error occurred.',
-                ],
-                'message' => 'Something went wrong.',
-                'data'    => [],
-            ], 500);
+
+            return ResponseJson::Failed([
+                'server_error' => trans('main::messages.global.server_wrong'),
+            ], trans('main::messages.global.server_wrong'));
+
         }
     }
 }

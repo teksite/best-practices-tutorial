@@ -11,6 +11,7 @@ use Modules\Auth\Http\Requests\VerifyVerificationCodeRequest;
 use Modules\Auth\Services\SendCodeService;
 use Modules\Auth\Services\TokenService;
 use Modules\Auth\Services\VerificationCodeService;
+use Modules\Main\Services\ResponseJson;
 
 class VerificationCodeController extends Controller
 {
@@ -25,7 +26,7 @@ class VerificationCodeController extends Controller
     {
         $to = $request->contactValue;
         $contactType = $request->contactType;
-        $actionType =$request->actionType;
+        $actionType = $request->actionType;
         $code = $this->codeService->generate($to, $actionType);
         $res = false;
         if ($contactType === ContactType::PHONE) {
@@ -34,15 +35,7 @@ class VerificationCodeController extends Controller
             $res = $this->sendService->viaEmail($to, $code['code'], $actionType, $code['expire_at']);
         }
 
-        return $res ? response()->json([
-            'message' => 'code send successfully',
-            'error'   => [],
-            'data'    => [],
-        ]) : response()->json([
-            'message' => 'failed to send code, please try again',
-            'errors'  => ['server' => ['an error occurred',]],
-            'data'    => [],
-        ]);
+        return $res ? ResponseJson::success('data', 'code send successfully') : ResponseJson::Failed(['server' => ['an error occurred']], 'auth::messages.verification_code.failed');
     }
 
     /**
@@ -51,15 +44,12 @@ class VerificationCodeController extends Controller
     public function verify(VerifyVerificationCodeRequest $request)
     {
         $contact = $request->contact;
-        $actionType =$request->actionType;
+        $actionType = $request->actionType;
 
-        $token = $this->tokenService->create($contact ,$actionType);
-        return response()->json([
-            'message' => trans('auth::messages.verification_code.valid'),
-            'error'   => [],
-            'data'    => [
-                'token' => $token,
-            ],
-        ]);
+        $token = $this->tokenService->create($contact, $actionType);
+
+        ResponseJson::success(['token' => $token], trans('auth::messages.verification_code.sent_successfully'));
+
+
     }
 }

@@ -5,6 +5,8 @@ namespace Modules\Auth\Providers;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Laravel\Sanctum\Sanctum;
+use Modules\Auth\Models\PersonalAccessToken;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 use Illuminate\Console\Scheduling\Schedule;
 
@@ -54,6 +56,15 @@ class AuthServiceProvider extends ModuleServiceProvider
     public function boot(): void
     {
         parent::boot();
+
+        Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
+
+        $this->throttlingRouts();
+    }
+
+
+    private function throttlingRouts(): void
+    {
         RateLimiter::for('check-user', function (Request $request) {
             if (app()->isLocal()) return Limit::none();
             return Limit::perMinute(2, 1)->by('check-user::' . $request->ip());

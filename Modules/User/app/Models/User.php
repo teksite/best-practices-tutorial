@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use Modules\User\Database\Factories\UserFactory;
 use Modules\User\Traits\MustVerifyPhone;
 
@@ -16,7 +17,7 @@ use Modules\User\Traits\MustVerifyPhone;
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, MustVerifyPhone;
+    use HasFactory, Notifiable, MustVerifyPhone , HasApiTokens;
 
     /**
      * Get the attributes that should be cast.
