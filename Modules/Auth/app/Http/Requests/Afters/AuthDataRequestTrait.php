@@ -2,6 +2,7 @@
 
 namespace Modules\Auth\Http\Requests\Afters;
 
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Validation\Validator;
 use Modules\Auth\Actions\DetectContactType;
 use Modules\Auth\Actions\NormalizeContact;
@@ -11,6 +12,7 @@ use Modules\User\Models\User;
 
 trait AuthDataRequestTrait
 {
+    public User|Authenticatable|null $user =null;
 
     public VerificationActionType|null $actionType = null;
     public ContactType|null $contactType = null;
@@ -32,6 +34,8 @@ trait AuthDataRequestTrait
         $this->contactType = DetectContactType::handle($this->input('contact'));
         $this->contactValue = NormalizeContact::handle($this->input('contact'));
         $this->actionType = VerificationActionType::tryFrom($this->input('action'));
+
+        $this->user = User::query()->firstWhere($this->contactType->value, $this->contactValue);
 
         if (is_null($this->contactType) || is_null($this->contactValue)) {
             $validator->errors()->add('overall', trans('auth::messages.auth.troubles'));

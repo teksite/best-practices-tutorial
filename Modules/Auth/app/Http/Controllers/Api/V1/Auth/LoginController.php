@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Modules\Auth\Http\Requests\LoginRequest;
 use Modules\Auth\Services\AuthTokenService;
 use Modules\Auth\Services\VerificationTokenService;
+use Modules\Main\Services\ResponseJson;
+use Modules\User\Transformers\UserResource;
 
 
 class LoginController extends Controller
@@ -18,10 +20,26 @@ class LoginController extends Controller
 
     public function login(LoginRequest $request)
     {
-        $token= $request->validated('token');
+        $token = $request->validated('token');
 
         $this->verificationTokenService->forget($token);
+        $user = $request->user;
 
-        dd($request->toArray());
+        if (!!$user) {
+
+            $apiToken = $this->authService->create($user);
+
+            return ResponseJson::Success(
+                [
+                    'user'  => UserResource::make($user),
+                    'token' => $this->authService->create($user),
+                ],
+                trans('main::messages.global.create_success', ['attribute' => __('user')]))
+                               ->withCookie(cookie('x_web_token', $apiToken, 24 * 28 * 60, config('session.domain'), null, true, true));
+        }else{
+            return ResponseJson::Failed(
+                ['server_error' => trans('main::messages.global.server_wrong'),],
+                trans('main::messages.global.server_wrong'));
+        }
     }
 }

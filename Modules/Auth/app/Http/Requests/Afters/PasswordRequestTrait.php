@@ -7,8 +7,6 @@ use Illuminate\Validation\Validator;
 
 trait PasswordRequestTrait
 {
-
-
     /**
      * @param Validator $validator
      * @return void
@@ -19,7 +17,6 @@ trait PasswordRequestTrait
 
         $credentials =[
             $this->contactType->value =>$this->contactValue,
-
             'password'=>$this->input('password')
         ];
 

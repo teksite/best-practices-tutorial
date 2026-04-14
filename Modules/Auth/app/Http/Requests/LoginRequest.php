@@ -2,15 +2,13 @@
 
 namespace Modules\Auth\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Validator;
 use Modules\Auth\Rules\ContactCheckRule;
 use Modules\Main\Foundation\BaseAuthRequest;
-use Modules\User\Models\User;
 
 class LoginRequest extends BaseAuthRequest
 {
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -54,8 +52,6 @@ class LoginRequest extends BaseAuthRequest
 
         $validator->errors()->add('overall', trans('auth::messages.auth.conflict_password_code_existence'));
         return;
-
-
     }
 
 }
