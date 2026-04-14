@@ -2,11 +2,10 @@
 
 namespace Modules\Main\Foundation;
 
-use Modules\Auth\Traits\PasswordRequestTrait;
-use Modules\Auth\Traits\TokenCodeRequestTrait;
-use Modules\Auth\Traits\AuthDataRequestTrait;
-use Modules\Auth\Traits\VerificationCodeRequestTrait;
-use Modules\Main\Foundation\ApiFormRequest;
+use Modules\Auth\Http\Requests\Afters\AuthDataRequestTrait;
+use Modules\Auth\Http\Requests\Afters\PasswordRequestTrait;
+use Modules\Auth\Http\Requests\Afters\TokenCodeRequestTrait;
+use Modules\Auth\Http\Requests\Afters\VerificationCodeRequestTrait;
 
 class BaseAuthRequest extends ApiFormRequest
 {

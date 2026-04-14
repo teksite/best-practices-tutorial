@@ -1,15 +1,9 @@
 <?php
 
-namespace Modules\Auth\Traits;
+namespace Modules\Auth\Http\Requests\Afters;
 
 use Illuminate\Validation\Validator;
-use Modules\Auth\Actions\DetectContactType;
-use Modules\Auth\Actions\NormalizeContact;
-use Modules\Auth\Enums\ContactType;
-use Modules\Auth\Enums\VerificationActionType;
 use Modules\Auth\Services\VerificationTokenService;
-use Modules\Auth\Services\VerificationCodeService;
-use Modules\User\Models\User;
 
 trait TokenCodeRequestTrait
 {
@@ -28,7 +22,6 @@ trait TokenCodeRequestTrait
         $actionType = $this->actionType;
 
         $tokenService = new VerificationTokenService();
-
         if (!$tokenService->verify($token, $contactValue, $actionType)) {
             $validator->errors()->add('credentials', trans('auth::messages.auth.invalid_token'));
             return;

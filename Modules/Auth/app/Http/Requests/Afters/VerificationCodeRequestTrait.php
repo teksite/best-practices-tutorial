@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Auth\Traits;
+namespace Modules\Auth\Http\Requests\Afters;
 
 use Illuminate\Validation\Validator;
 use Modules\Auth\Enums\VerificationActionType;

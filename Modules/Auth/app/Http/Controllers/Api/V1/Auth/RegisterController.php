@@ -58,10 +58,12 @@ class RegisterController extends Controller
             if (!!$user) {
                 $apiToken = $this->authService->create($user);
 
-                return ResponseJson::Success([
-                    'user'  => UserResource::make($user),
-                    'token' => $this->authService->create($user),
-                ], trans('main::messages.global.create_success', ['attribute' => __('user')]))
+                return ResponseJson::Success(
+                    [
+                        'user'  => UserResource::make($user),
+                        'token' => $this->authService->create($user),
+                    ],
+                    trans('main::messages.global.create_success', ['attribute' => __('user')]))
                                    ->withCookie(cookie('x_web_token', $apiToken, 24 * 28 * 60, config('session.domain'), null, true, true));
             }
             throw new \Exception(trans('main::messages.global.create_failed', ['attribute' => __('user')]));
@@ -69,9 +71,9 @@ class RegisterController extends Controller
 
             Log::error($exception);
 
-            return ResponseJson::Failed([
-                'server_error' => trans('main::messages.global.server_wrong'),
-            ], trans('main::messages.global.server_wrong'));
+            return ResponseJson::Failed(
+                ['server_error' => trans('main::messages.global.server_wrong'),],
+                trans('main::messages.global.server_wrong'));
 
         }
     }

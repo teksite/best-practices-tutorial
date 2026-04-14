@@ -1,14 +1,12 @@
 <?php
 
-namespace Modules\Auth\Traits;
+namespace Modules\Auth\Http\Requests\Afters;
 
 use Illuminate\Validation\Validator;
 use Modules\Auth\Actions\DetectContactType;
 use Modules\Auth\Actions\NormalizeContact;
 use Modules\Auth\Enums\ContactType;
 use Modules\Auth\Enums\VerificationActionType;
-use Modules\Auth\Rules\ContactCheckRule;
-use Modules\Auth\Services\VerificationCodeService;
 use Modules\User\Models\User;
 
 trait AuthDataRequestTrait
