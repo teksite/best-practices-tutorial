@@ -36,7 +36,7 @@ class VerifyVerificationCodeRequest extends BaseAuthRequest
         return [
             fn(Validator $validator) => $this->appendContactData($validator),
             fn(Validator $validator) => $this->checkExistenceContactCondition($validator),
-            fn(Validator $validator) => $this->checkCode($validator),
+            fn(Validator $validator) => $this->checkVerificationCode($validator),
         ];
     }
 }

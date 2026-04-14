@@ -20,7 +20,7 @@ class VerificationCodeService
     const int EMAIL_EXPIRATION = 60 * 5;//second
     const bool ENCRYPT_CODE = true;
 
-    const bool PRODUCTION_MODE = false;
+    const bool PRODUCTION_MODE = true;
 
     public function __construct()
     {
@@ -113,11 +113,12 @@ class VerificationCodeService
      * @param string $to
      * @param VerificationActionType $action
      * @param bool $different
+     * @param bool $testing
      * @return int|Carbon
      */
-    public function getRetryTime(string $to, VerificationActionType $action, bool $different = true): int|Carbon
+    public function getRetryTime(string $to, VerificationActionType $action, bool $different = true , bool $testing = false): int|Carbon
     {
-        if (!self::PRODUCTION_MODE) return 0;
+        if (!self::PRODUCTION_MODE || $testing) return 0;
         $gateway = DetectContactType::handle($to);
 
         $cacheKey = $this->generateCacheKey($gateway, $action, $to);

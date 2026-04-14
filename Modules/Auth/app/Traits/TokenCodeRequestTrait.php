@@ -13,6 +13,10 @@ use Modules\User\Models\User;
 
 trait TokenCodeRequestTrait
 {
+    /**
+     * @param Validator $validator
+     * @return void
+     */
     public function checkToken(Validator $validator): void
     {
         if ($validator->errors()->isNotEmpty()) return;
@@ -26,7 +30,7 @@ trait TokenCodeRequestTrait
         $tokenService = new VerificationTokenService();
 
         if (!$tokenService->verify($token, $contactValue, $actionType)) {
-            $validator->errors()->add('token', trans('auth::messages.auth.invalid_token'));
+            $validator->errors()->add('credentials', trans('auth::messages.auth.invalid_token'));
             return;
         }
 

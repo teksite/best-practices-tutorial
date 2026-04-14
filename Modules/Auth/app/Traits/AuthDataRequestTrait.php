@@ -11,7 +11,7 @@ use Modules\Auth\Rules\ContactCheckRule;
 use Modules\Auth\Services\VerificationCodeService;
 use Modules\User\Models\User;
 
-trait UserAuthRequestTrait
+trait AuthDataRequestTrait
 {
 
     public VerificationActionType|null $actionType = null;
@@ -90,7 +90,6 @@ trait UserAuthRequestTrait
         if ($action === VerificationActionType::LOGIN->value && !$isUserExist) {
             $validator->errors()->add($contactField, trans('auth::messages.auth.user_not_found'));
             return;
-
         }
     }
 

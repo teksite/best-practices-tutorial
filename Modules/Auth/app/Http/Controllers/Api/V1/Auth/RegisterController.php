@@ -4,7 +4,6 @@ namespace Modules\Auth\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Modules\Auth\Enums\ContactType;
@@ -17,7 +16,7 @@ use Modules\User\Transformers\UserResource;
 
 class RegisterController extends Controller
 {
-    public function __construct(protected VerificationTokenService $verificationTokenService , protected AuthTokenService $authService, protected UserLogic $Logic)
+    public function __construct(protected VerificationTokenService $verificationTokenService, protected AuthTokenService $authService, protected UserLogic $Logic)
     {
     }
 
@@ -57,13 +56,13 @@ class RegisterController extends Controller
 
 
             if (!!$user) {
-                $apiToken =  $this->authService->create($user);
+                $apiToken = $this->authService->create($user);
 
                 return ResponseJson::Success([
                     'user'  => UserResource::make($user),
                     'token' => $this->authService->create($user),
                 ], trans('main::messages.global.create_success', ['attribute' => __('user')]))
-                    ->withCookie(cookie('x_web_token', $apiToken , 24*28*60 ,config('session.domain'),null,true ,true));
+                                   ->withCookie(cookie('x_web_token', $apiToken, 24 * 28 * 60, config('session.domain'), null, true, true));
             }
             throw new \Exception(trans('main::messages.global.create_failed', ['attribute' => __('user')]));
         } catch (\Throwable $exception) {
