@@ -43,21 +43,17 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
-    public function verifiedContactType(?ContactType $contactType = null, bool $overwrite = false, ?Carbon $date = null): array
+    public function verifiedContactType(?ContactType $contactType = null, bool $overwrite = false, ?Carbon $date = null): void
     {
         $date ??= Carbon::now();
-        if ($contactType) {
-            $ways = [
-                $contactType->value . '_verified_at',
-            ];
-        } else {
-            $ways = [
-                'email_verified_at',
-                'phone_verified_at',
-            ];
-        }
+
+        $ways = $contactType
+            ? [$contactType->value . '_verified_at',]
+            : ['email_verified_at', 'phone_verified_at'];
         foreach ($ways as $way) {
-            if ($overwrite) $this->forceFill([$way, $date]);
+            if ($overwrite || is_null($this->{$way})) {
+                $this->forceFill([$way => $date])->save();
+            }
         }
 
     }

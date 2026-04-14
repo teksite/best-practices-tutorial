@@ -28,9 +28,7 @@ class LoginController extends Controller
 
         try {
             if (!!$user) {
-                if (is_null($user->ver)) {
-
-                }
+                $user->verifiedContactType($request->contactType);
 
                 $apiToken = $this->authService->create($user);
 
