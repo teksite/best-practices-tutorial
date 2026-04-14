@@ -4,6 +4,7 @@ namespace Modules\Auth\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Modules\Auth\Http\Requests\LoginRequest;
 use Modules\Auth\Services\AuthTokenService;
 use Modules\Auth\Services\VerificationTokenService;
@@ -25,21 +26,30 @@ class LoginController extends Controller
         $this->verificationTokenService->forget($token);
         $user = $request->user;
 
-        if (!!$user) {
+        try {
+            if (!!$user) {
+                if (is_null($user->ver)) {
 
-            $apiToken = $this->authService->create($user);
+                }
 
-            return ResponseJson::Success(
-                [
-                    'user'  => UserResource::make($user),
-                    'token' => $this->authService->create($user),
-                ],
-                trans('main::messages.global.create_success', ['attribute' => __('user')]))
-                               ->withCookie(cookie('x_web_token', $apiToken, 24 * 28 * 60, config('session.domain'), null, true, true));
-        }else{
+                $apiToken = $this->authService->create($user);
+
+                return ResponseJson::Success(
+                    [
+                        'user'  => UserResource::make($user),
+                        'token' => $this->authService->create($user),
+                    ],
+                    trans('main::messages.global.create_success', ['attribute' => __('user')]))
+                                   ->withCookie(cookie('x_web_token', $apiToken, 24 * 28 * 60, config('session.domain'), null, true, true));
+
+            }
+            throw new \Exception(trans('main::messages.global.server_wrong'));
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
             return ResponseJson::Failed(
                 ['server_error' => trans('main::messages.global.server_wrong'),],
                 trans('main::messages.global.server_wrong'));
         }
     }
+
 }
