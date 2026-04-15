@@ -11,7 +11,6 @@ use Modules\Main\Services\ResponseJson;
 
 class DecryptAuthenticationTokenMiddleware
 {
-    const string CLIENT_TOKEN_PREFIX = "Bearer ";
 
     /**
      * Handle an incoming request.
@@ -26,7 +25,7 @@ class DecryptAuthenticationTokenMiddleware
 
             $res = false;
             if (!!$headerToken) {
-                $token = str_replace(self::CLIENT_TOKEN_PREFIX, '', $headerToken);
+                $token = str_replace(AuthTokenService::CLIENT_TOKEN_PREFIX, '', $headerToken);
                 $res = $this->setInHeader($request, $token);
 
             } elseif (is_null($headerToken) && !!$cookieToken) {

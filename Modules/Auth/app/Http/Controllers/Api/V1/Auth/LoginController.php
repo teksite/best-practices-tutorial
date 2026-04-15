@@ -23,14 +23,14 @@ class LoginController extends Controller
     {
         $token = $request->validated('token');
         $this->verificationTokenService->forget($token);
+
         $user = $request->user;
 
         try {
             if (!!$user) {
-                $user->verifiedContactType($request->contactType);
+                $user->verifyingContactType($request->contactType);
 
                 $apiToken = $this->authService->create($user);
-
                 return ResponseJson::Success(
                     [
                         'user'  => UserResource::make($user),

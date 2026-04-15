@@ -43,7 +43,7 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
-    public function verifiedContactType(?ContactType $contactType = null, bool $overwrite = false, ?Carbon $date = null): void
+    public function verifyingContactType(?ContactType $contactType = null, bool $overwrite = false, ?Carbon $date = null): void
     {
         $date ??= Carbon::now();
 

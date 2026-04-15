@@ -4,6 +4,8 @@ namespace Modules\Auth\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Modules\Auth\Models\PersonalAccessToken;
+use Modules\Auth\Services\AuthTokenService;
 use Modules\Main\Services\ResponseJson;
 use Modules\User\Transformers\UserResource;
 
