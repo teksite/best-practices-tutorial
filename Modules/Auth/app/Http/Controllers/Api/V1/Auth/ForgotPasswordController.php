@@ -18,7 +18,7 @@ use Modules\User\Transformers\UserResource;
 
 class ForgotPasswordController extends Controller
 {
-    public function __construct(protected VerificationTokenService $verificationTokenService, protected UserLogic $Logic)
+    public function __construct(protected VerificationTokenService $verificationTokenService,protected AuthTokenService $tokenService, protected UserLogic $Logic)
     {
     }
 
@@ -32,6 +32,8 @@ class ForgotPasswordController extends Controller
             if (!!$user) {
 
                 $this->Logic->resetPassword($user, $password);
+
+                $this->tokenService->flush($user);
 
                 return ResponseJson::Success(
                     [],
