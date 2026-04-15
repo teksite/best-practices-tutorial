@@ -13,6 +13,7 @@ return [
         'reset_password'                   => 'resetting password is done successfully',
         'contact_verified_before'          => 'the entered :attribute already verified',
         'contact_verified_success'         => 'the entered :attribute is verified successfully',
+        'contact_is_not_verified'         => 'the :attribute is note verified',
         'contact_verified_failed'          => 'the entered :attribute is not verified , try again',
     ],
     'verification_code' => [
