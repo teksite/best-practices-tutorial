@@ -10,6 +10,7 @@ return [
         'conflict_password_code' => 'something went wrong with the authentication way',
         'conflict_password_code_existence' => 'password and code should not use together',
         'credentials'=>'The credentials do not match',
+        'reset_password'=>'resetting password is done successfully',
     ],
     'verification_code' => [
         'sent_successfully' => 'the verification code was successfully sent',

@@ -5,5 +5,5 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::get('/', function (Request $request) {
-    dd($request->userAgent(), $request->ip(),$request->host());
+    dd($request->userAgent(), $request->ip(),$request->host() , $request);
 });

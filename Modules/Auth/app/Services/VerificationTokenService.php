@@ -65,11 +65,12 @@ class VerificationTokenService
     }
 
     /**
-     * @param string $token
+     * @param string|null $token
      * @return void
      */
-    public function forget(string $token): void
+    public function forget(?string $token): void
     {
+        if (is_null($token)) return;
         Cache::forget($this->getOrCreateKey($token));
     }
 }

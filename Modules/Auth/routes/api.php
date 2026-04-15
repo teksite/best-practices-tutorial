@@ -2,11 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Auth\Http\Controllers\Api\V1\Auth\CheckUserController;
+use Modules\Auth\Http\Controllers\Api\V1\Auth\ForgotPasswordController;
 use Modules\Auth\Http\Controllers\Api\V1\Auth\LoginController;
 use Modules\Auth\Http\Controllers\Api\V1\Auth\RegisterController;
 use Modules\Auth\Http\Controllers\Api\V1\Auth\VerificationCodeController;
 use Modules\Auth\Http\Controllers\Api\V1\Auth\WhoAmIController;
-use Modules\Auth\Http\Controllers\AuthController;
 
 Route::prefix('v1/auth')->name('v1.auth.')->group(function () {
 
@@ -24,6 +24,7 @@ Route::prefix('v1/auth')->name('v1.auth.')->group(function () {
     Route::middleware(['guest'])->group(function () {
         Route::Post("/register", [RegisterController::class, 'store'])->name('register');
         Route::Post("/login", [LoginController::class, 'login'])->name('login');
+        Route::Post("/forgot-password", [ForgotPasswordController::class, 'forgot'])->name('forgot-password');
     });
 
 

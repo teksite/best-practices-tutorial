@@ -22,7 +22,6 @@ class LoginController extends Controller
     public function login(LoginRequest $request)
     {
         $token = $request->validated('token');
-
         $this->verificationTokenService->forget($token);
         $user = $request->user;
 
