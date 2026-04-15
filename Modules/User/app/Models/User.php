@@ -35,13 +35,13 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
-    public function verifiedContacts(ContactType|null $contactType = null): bool|array
+    public function verifiedContacts(ContactType|null $contactType = null): bool
     {
         $contactTypes = [
             'phone' => $this->hasVerifiedPhone(),
             'email' => $this->hasVerifiedEmail(),
         ];
-        if (is_null($contactType)) return $contactTypes;
+        if (is_null($contactType))  return $contactTypes['phone'] && $contactTypes['email'];
 
        return $contactTypes[$contactType->value];
 

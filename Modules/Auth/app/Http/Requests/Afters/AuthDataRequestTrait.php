@@ -12,7 +12,7 @@ use Modules\User\Models\User;
 
 trait AuthDataRequestTrait
 {
-    public User|Authenticatable|null $user =null;
+    public User|Authenticatable|null $user = null;
 
     public VerificationActionType|null $actionType = null;
     public ContactType|null $contactType = null;
@@ -57,11 +57,11 @@ trait AuthDataRequestTrait
             return;
         }
 
-        $contactAltType= $this->contactType === ContactType::PHONE ? ContactType::EMAIL : ContactType::PHONE;
+        $contactAltType = $this->contactType === ContactType::PHONE ? ContactType::EMAIL : ContactType::PHONE;
 
-        $existenceUserByAltContact = User::query()->where($contactAltType->value,  $this->contactValue)->exists();
+        $existenceUserByAltContact = User::query()->where($contactAltType->value, $this->contactValue)->exists();
         if ($existenceUserByAltContact) {
-            $validator->errors()->add($contactAltType->value, trans('auth::messages.auth.contact_is_used_before' , ['attribute' => $contactAltType->value]));
+            $validator->errors()->add($contactAltType->value, trans('auth::messages.auth.contact_is_used_before', ['attribute' => $contactAltType->value]));
             return;
         }
 
@@ -98,15 +98,18 @@ trait AuthDataRequestTrait
     public function checkIfContactIsNull(Validator $validator): void
     {
         if ($validator->errors()->isNotEmpty()) return;
-        $contactType = $this->contactType;
-        $contactValue = $this->contactValue;
 
-        if (auth('sanctum')->user()->verifiedContacts($contactType)) {
-            $validator->errors()->add($contactType->value, trans('auth::messages.auth.contact_verified_before' , ['attribute' => $contactType->value]));
-            return;
+        $actionType = $this->actionType;
+
+        if ($actionType === VerificationActionType::VERIFY) {
+
+            $contactType = $this->contactType;
+
+            if (auth('sanctum')->user()->verifiedContacts($contactType)) {
+                $validator->errors()->add($contactType->value, trans('auth::messages.auth.contact_verified_before', ['attribute' => $contactType->value]));
+                return;
+            }
         }
-
-
     }
 
 }
