@@ -11,10 +11,10 @@ class CheckUserController extends Controller
 {
     public function check(CheckUserFormRequest $request)
     {
-        $user = User::query()->where($request->contactType?->value, $request->contactValue)->exists();
 
+        $user = User::query()->where($request->contactType?->value, $request->contactValue)->exists();
         return ResponseJson::Success([
-            'message' =>$user ?  trans(['auth::messages.auth.user_exist']) : trans(['auth::messages.user_not_found']),
+            'message' =>$user ?  trans('auth::messages.auth.user_exist') : trans('auth::messages.user_not_found'),
             'data'=>[],
         ]);
 

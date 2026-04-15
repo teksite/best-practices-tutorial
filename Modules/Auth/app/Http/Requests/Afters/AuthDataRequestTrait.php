@@ -95,4 +95,18 @@ trait AuthDataRequestTrait
         }
     }
 
+    public function checkIfContactIsNull(Validator $validator): void
+    {
+        if ($validator->errors()->isNotEmpty()) return;
+        $contactType = $this->contactType;
+        $contactValue = $this->contactValue;
+
+        if (auth('sanctum')->user()->verifiedContacts($contactType)) {
+            $validator->errors()->add($contactType->value, trans('auth::messages.auth.contact_verified_before' , ['attribute' => $contactType->value]));
+            return;
+        }
+
+
+    }
+
 }

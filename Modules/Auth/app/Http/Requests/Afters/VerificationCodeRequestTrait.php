@@ -12,7 +12,7 @@ trait VerificationCodeRequestTrait
      * @param Validator $validator
      * @return void
      */
-    protected function checkVerificationCode(Validator $validator): void
+    protected function checkSentVerificationCode(Validator $validator): void
     {
         if ($validator->errors()->isNotEmpty()) return;
         $verificationService = new VerificationCodeService();

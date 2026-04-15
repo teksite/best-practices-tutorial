@@ -3,7 +3,9 @@
 namespace Modules\Auth\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
+use Modules\Auth\Enums\VerificationActionType;
 use Modules\Auth\Rules\ContactCheckRule;
 use Modules\Main\Foundation\BaseAuthRequest;
 
@@ -23,6 +25,7 @@ class RegisterRequest extends BaseAuthRequest
     public function rules(): array
     {
         return [
+            'action'  => ['bail', 'required', 'string', Rule::enum(VerificationActionType::class)],
             'contact' => ['bail', 'required', 'string', 'min:5', 'max:100', new ContactCheckRule],
             'contact_alt' => ['bail', 'required', 'string', 'min:5', 'max:100', new ContactCheckRule],
             'password'    => ['bail', 'required', 'string','confirmed' ,'min:5', 'max:20'],

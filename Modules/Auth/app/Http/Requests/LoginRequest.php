@@ -2,7 +2,9 @@
 
 namespace Modules\Auth\Http\Requests;
 
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
+use Modules\Auth\Enums\VerificationActionType;
 use Modules\Auth\Rules\ContactCheckRule;
 use Modules\Main\Foundation\BaseAuthRequest;
 
@@ -24,6 +26,7 @@ class LoginRequest extends BaseAuthRequest
     {
         return [
             'contact'  => ['bail', 'required', 'string', 'min:5', 'max:100', new ContactCheckRule],
+            'action'  => ['bail', 'required', 'string', Rule::enum(VerificationActionType::class)],
             'password' => ['bail', 'required_without:token'],
             'token'    => ['bail', 'required_without:password'],
         ];

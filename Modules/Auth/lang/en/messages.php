@@ -2,15 +2,18 @@
 
 return [
     'auth'              => [
-        'usernameType'           => 'the contact pattern is not valid',
-        'user_exist'             => 'The user exists',
-        'user_not_found'         => 'The user does not exist',
-        'contact_is_used_before' => 'the entered :attribute already use by another user or is not accepted by the system',
-        'invalid_token'          => 'invalid token, please try again',
-        'conflict_password_code' => 'something went wrong with the authentication way',
+        'usernameType'                     => 'the contact pattern is not valid',
+        'user_exist'                       => 'The user exists',
+        'user_not_found'                   => 'The user does not exist',
+        'contact_is_used_before'           => 'the entered :attribute already use by another user or is not accepted by the system',
+        'invalid_token'                    => 'invalid token, please try again',
+        'conflict_password_code'           => 'something went wrong with the authentication way',
         'conflict_password_code_existence' => 'password and code should not use together',
-        'credentials'=>'The credentials do not match',
-        'reset_password'=>'resetting password is done successfully',
+        'credentials'                      => 'The credentials do not match',
+        'reset_password'                   => 'resetting password is done successfully',
+        'contact_verified_before'          => 'the entered :attribute already verified',
+        'contact_verified_success'         => 'the entered :attribute is verified successfully',
+        'contact_verified_failed'          => 'the entered :attribute is not verified , try again',
     ],
     'verification_code' => [
         'sent_successfully' => 'the verification code was successfully sent',
