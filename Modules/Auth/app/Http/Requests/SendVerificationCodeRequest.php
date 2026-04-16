@@ -36,8 +36,7 @@ class SendVerificationCodeRequest extends BaseAuthRequest
         return [
             fn(Validator $validator) => $this->appendContactData($validator),
             fn(Validator $validator) => $this->checkExistenceContactCondition($validator),
-            #TODO remove testing parameter i  production mode
-            fn(Validator $validator) => $this->getRetryTimeToSendCode($validator , true),
+            fn(Validator $validator) => $this->getRetryTimeToSendCode($validator),
             fn(Validator $validator) => $this->checkIfContactIsNull($validator),
 
         ];

@@ -10,6 +10,12 @@ use Modules\Auth\Http\Controllers\Api\V1\Auth\VerifyContactsController;
 use Modules\Auth\Http\Controllers\Api\V1\Auth\WhoAmIController;
 use Modules\Auth\Http\Middleware\EnsureContactsAreVerifiedMiddleware;
 
+Route::post('v1/test', function () {
+    $user = \Modules\User\Models\User::find(1);
+    $user->notify(new \Modules\Auth\Notifications\WelcomeNotification());
+});
+
+
 Route::prefix('v1/auth')->name('v1.auth.')->group(function () {
 
     Route::post("/check-user", [CheckUserController::class, 'check'])->name('check-user');

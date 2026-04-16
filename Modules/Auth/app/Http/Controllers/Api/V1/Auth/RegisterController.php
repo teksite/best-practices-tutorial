@@ -3,11 +3,13 @@
 namespace Modules\Auth\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Modules\Auth\Enums\ContactType;
 use Modules\Auth\Http\Requests\RegisterRequest;
+use Modules\Auth\Notifications\WelcomeNotification;
 use Modules\Auth\Services\AuthTokenService;
 use Modules\Auth\Services\VerificationTokenService;
 use Modules\Main\Services\ResponseJson;
@@ -51,12 +53,9 @@ class RegisterController extends Controller
                 return $user;
             });
 
-            // TODO: Implement sending verification email/phone functionality
-            // Example: dispatch(new SendVerificationNotification($user, $contactType));
-
 
             if (!!$user) {
-
+                $user->notify(new WelcomeNotification());
                 $apiToken = $this->authService->create($user);
 
                 return ResponseJson::Success(
