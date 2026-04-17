@@ -94,6 +94,36 @@ class NotificationPreferencesService
      */
     public function updatePreference(string $type, string $channel, bool $value): Model
     {
+        $data = $this->prepareToUpdate($type, $channel, $value);
+
+        return $this->update($data);
+    }
+
+    /**
+     * @param array $data
+     * @return Model
+     */
+    public function updateMany(array $data = []): Model
+    {
+        $allTypes = config('user.notifications.types');
+        $data = [];
+
+        foreach ($allTypes as $type => $preferences) {
+            foreach ($preferences as $channel => $value) {
+                $data[$type] = $this->prepareToUpdate($type, $channel, $value);
+            }
+        }
+        return $this->update($data);
+    }
+
+    /**
+     * @param string $type
+     * @param string $channel
+     * @param bool $value
+     * @return array
+     */
+    public function prepareToUpdate(string $type, string $channel, bool $value): array
+    {
         $defaultPreference = $this->defaultPreferences($type) ?? [];
 
         $stored = $this->storedPreferences();
@@ -104,11 +134,19 @@ class NotificationPreferencesService
             return $value !== ($defaultPreference[$channel] ?? false);
         })->toArray();
 
+        return $data;
+    }
+
+    /**
+     * @param $data
+     * @return Model
+     */
+    protected function update($data): Model
+    {
         return $this->user->notificationPreferences()->updateOrCreate(
             ['user_id' => $this->user->id],
             ['preferences' => $data],
         );
-
     }
 
 

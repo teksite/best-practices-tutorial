@@ -13,10 +13,13 @@ return [
                 ],
             ],
         ],
-        'channels' => [
-            'email' => 'mail',
-            'sms' => \Modules\Main\Notifications\Channels\SmsChannel::class,
+        'channels'    => [
+            'email'    => 'mail',
+            'sms'      => \Modules\Main\Notifications\Channels\SmsChannel::class,
             'telegram' => \Modules\Main\Notifications\Channels\TelegramChannel::class,
-        ]
+        ],
+        'types'       => [
+            'welcome_message',
+        ],
     ],
 ];
