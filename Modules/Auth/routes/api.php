@@ -11,9 +11,13 @@ use Modules\Auth\Http\Controllers\Api\V1\Auth\WhoAmIController;
 use Modules\Auth\Http\Middleware\EnsureContactsAreVerifiedMiddleware;
 
 Route::post('v1/test', function () {
-    $user = \Modules\User\Models\User::find(1);
-    ((new \Modules\User\Services\NotificationPreferencesService)->getFilteredPreference($user));
-    $user->notify(new \Modules\Auth\Notifications\WelcomeNotification());
+    $user = \Modules\User\Models\User::query()->find(1);
+    $service = new \Modules\User\Services\NotificationPreferencesService($user);
+
+    $service->getChannels('welcome_message');
+
+//    $user->notify(new \Modules\Auth\Notifications\WelcomeNotification());
+    return $service->getFilteredPreferences();
 });
 
 
