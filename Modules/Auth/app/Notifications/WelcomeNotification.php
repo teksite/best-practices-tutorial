@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
+use Modules\Main\Notifications\Channels\SmsChannel;
 
 class WelcomeNotification extends Notification implements ShouldQueue
 {
@@ -23,7 +24,7 @@ class WelcomeNotification extends Notification implements ShouldQueue
      */
     public function via($notifiable): array
     {
-        return ['mail'];
+        return ['mail' , SmsChannel::class];
     }
 
     /**
@@ -35,6 +36,17 @@ class WelcomeNotification extends Notification implements ShouldQueue
             ->line(trans('welcome.message'))
             ->action('Notification Action', 'https://laravel.com')
             ->line('Thank you for using our application!');
+    }
+
+    public function toSMS($notifiable): array
+    {
+        return [
+            'templateID' => 21126,
+            'mobile'     => $notifiable->phone,
+            'params'     => [
+                $notifiable->name,
+            ],
+        ];
     }
 
     /**
