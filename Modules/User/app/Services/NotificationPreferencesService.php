@@ -22,7 +22,7 @@ class NotificationPreferencesService
     public function storedPreferences(?string $type = null): array
     {
         $storedData = $this->user->notificationPreferences?->preferences ?? [];
-        return !!$type ? $storedData[$type] : $storedData;
+        return !!$type ? ($storedData[$type] ?? []) : $storedData;
     }
 
     /**
@@ -32,7 +32,7 @@ class NotificationPreferencesService
     public function defaultPreferences(?string $type = null): array
     {
         $defaultData = config('user.notifications.preferences.default');
-        return !!$type ? $defaultData[$type] : $defaultData;
+        return !!$type ? ($defaultData[$type] ?? []) : $defaultData;
 
     }
 

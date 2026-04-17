@@ -7,11 +7,14 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Modules\Main\Notifications\Channels\SmsChannel;
+use Modules\User\Services\NotificationPreferencesService;
 
 class WelcomeNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
+
+    protected string $type = 'welcome_message';
     /**
      * Create a new notification instance.
      */
@@ -24,7 +27,7 @@ class WelcomeNotification extends Notification implements ShouldQueue
      */
     public function via($notifiable): array
     {
-        return ['mail' , SmsChannel::class];
+        return (new NotificationPreferencesService($notifiable))->getChannels($this->type) ?? [];
     }
 
     /**

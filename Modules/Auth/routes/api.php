@@ -32,8 +32,8 @@ Route::prefix('v1/auth')->name('v1.auth.')->group(function () {
 
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::get("/who-am-i", [WhoAmIController::class, 'whoAmI'])->name('who-am-i')->middleware([EnsureContactsAreVerifiedMiddleware::class]);
-
         Route::post("/verify-contact", [VerifyContactsController::class, 'verify'])->name('verify-contact');
+;
     });
 
     Route::middleware(['guest'])->group(function () {
