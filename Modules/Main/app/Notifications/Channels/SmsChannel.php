@@ -17,10 +17,8 @@ class SmsChannel
 
         $data = $notification->toSms($notifiable);
 
-
         $apiKey = config('services.msgway');
         $params = [
-            "mobile" => $notification->toSms($notifiable),
             "method" => "sms",
             $data,
         ];
@@ -28,6 +26,7 @@ class SmsChannel
         $res = Http::withHeaders(['apiKey' => $apiKey, 'Accept' => 'application/json'])
                    ->post('https://api.msgway.com/send', $params);
 
+        if (!$res->successful()) throw new Exception("Error sending SMS");
 
     }
 

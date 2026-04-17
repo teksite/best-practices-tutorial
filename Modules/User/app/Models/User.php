@@ -6,6 +6,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -41,9 +42,9 @@ class User extends Authenticatable implements MustVerifyEmail
             'phone' => $this->hasVerifiedPhone(),
             'email' => $this->hasVerifiedEmail(),
         ];
-        if (is_null($contactType))  return $contactTypes['phone'] && $contactTypes['email'];
+        if (is_null($contactType)) return $contactTypes['phone'] && $contactTypes['email'];
 
-       return $contactTypes[$contactType->value];
+        return $contactTypes[$contactType->value];
 
 
     }
@@ -60,6 +61,11 @@ class User extends Authenticatable implements MustVerifyEmail
                 $this->forceFill([$way => $date])->save();
             }
         }
+    }
 
+
+    public function notificationPreferences(): HasOne
+    {
+        return $this->hasOne(UserNotificationPreference::class);
     }
 }

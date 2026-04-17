@@ -12,6 +12,7 @@ use Modules\Auth\Http\Middleware\EnsureContactsAreVerifiedMiddleware;
 
 Route::post('v1/test', function () {
     $user = \Modules\User\Models\User::find(1);
+    ((new \Modules\User\Services\NotificationPreferencesService)->getFilteredPreference($user));
     $user->notify(new \Modules\Auth\Notifications\WelcomeNotification());
 });
 
