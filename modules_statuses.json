@@ -1,5 +1,6 @@
 {
     "User": true,
     "Auth": true,
-    "Main": true
+    "Main": true,
+    "Uploader": true
 }
