@@ -9,12 +9,14 @@ return [
                 'welcome_message' => [
                     'email'    => true,
                     'sms'      => false,
-                    'telegram' => true,
+                    'telegram' => false,
+                    'database' => true,
                 ],
             ],
         ],
         'channels'    => [
             'email'    => 'mail',
+            'database'    => 'database',
             'sms'      => \Modules\Main\Notifications\Channels\SmsChannel::class,
             'telegram' => \Modules\Main\Notifications\Channels\TelegramChannel::class,
         ],

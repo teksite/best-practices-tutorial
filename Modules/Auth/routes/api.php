@@ -12,12 +12,13 @@ use Modules\Auth\Http\Middleware\EnsureContactsAreVerifiedMiddleware;
 
 Route::post('v1/test', function () {
     $user = \Modules\User\Models\User::query()->find(1);
-    $service = new \Modules\User\Services\NotificationPreferencesService($user);
+//    $service = new \Modules\User\Services\NotificationPreferencesService($user);
+//
+//    $service->getChannels('welcome_message');
 
-    $service->getChannels('welcome_message');
-
-//    $user->notify(new \Modules\Auth\Notifications\WelcomeNotification());
-    return $service->getFilteredPreferences();
+    $user->notify(new \Modules\Auth\Notifications\WelcomeNotification());
+    return 'done';
+//    return $service->getFilteredPreferences();
 });
 
 

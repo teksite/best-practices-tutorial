@@ -15,6 +15,7 @@ class WelcomeNotification extends Notification implements ShouldQueue
 
 
     protected string $type = 'welcome_message';
+
     /**
      * Create a new notification instance.
      */
@@ -55,8 +56,16 @@ class WelcomeNotification extends Notification implements ShouldQueue
     /**
      * Get the array representation of the notification.
      */
-    public function toArray($notifiable): array
+    public function toDatabase($notifiable): array
     {
-        return [];
+        return [
+            'title'=>'welcome message',
+            'content'=>'welcome message, this is a test message',
+        ];
+    }
+
+    public function databaseType(object $notifiable): string
+    {
+        return 'welcoming';
     }
 }
