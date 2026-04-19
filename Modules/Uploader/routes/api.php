@@ -1,8 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\Uploader\Http\Controllers\Api\V1\FileManagerController;
 use Modules\Uploader\Http\Controllers\UploaderController;
 
-Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
-    Route::apiResource('uploaders', UploaderController::class)->names('uploader');
+Route::prefix('v1/file_manager')->name('v1.file_manager.')->group(function () {
+
+        Route::post("/", [FileManagerController::class, 'upload'])->name('upload');
+//        Route::post("/", [UploadFilesController::class, 'update'])->name('update');
+
 });
