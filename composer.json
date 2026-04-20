@@ -98,7 +98,7 @@
     "repositories": {
         "packagist": {
             "type": "composer",
-            "url": "https://package-mirror.liara.ir/repository/composer/"
+            "url": "https://mirror-composer.runflare.com"
         }
     }
 }

@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -24,10 +23,9 @@ return new class extends Migration
 
 
         Schema::create('upload_files_models', function (Blueprint $table) {
-           $table->foreignId('upload_id')->references('id')->cascadeOnDelete();
-           $table->morphs('model');
-
-
+            $table->foreignUlid('upload_id')->constrained('upload_files', 'id')->cascadeOnDelete();
+            $table->morphs('model');
+            $table->string('name')->nullable();
         });
 
 
@@ -38,6 +36,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('upload_files_models');
         Schema::dropIfExists('upload_files');
     }
 };

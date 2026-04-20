@@ -18,7 +18,7 @@ class FileManagerController extends Controller
 
     public function upload(Request $request)
     {
-        $this->uploaderService->upload($request->file('file') ,null , false , null);
+       $uploadedFile= $this->uploaderService->upload($request->file('file') ,null , false , null);
 
     }
 }
