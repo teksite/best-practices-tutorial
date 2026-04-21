@@ -12,6 +12,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 use Modules\Auth\Enums\ContactType;
+use Modules\Uploader\Traits\HasAttachedFile;
 use Modules\User\Database\Factories\UserFactory;
 use Modules\User\Traits\MustVerifyPhone;
 
@@ -20,7 +21,7 @@ use Modules\User\Traits\MustVerifyPhone;
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, MustVerifyPhone, HasApiTokens;
+    use HasFactory, Notifiable, MustVerifyPhone, HasApiTokens , HasAttachedFile;
 
     /**
      * Get the attributes that should be cast.
