@@ -107,10 +107,11 @@ class UploaderService
     {
         try {
             if (Storage::disk($this->disk->value)->exists($path . '/' . $name)) {
-                return Storage::disk($this->disk->value)->putFileAs($path, $file, $name);
+                Storage::disk($this->disk->value)->putFileAs($path, $file, $name);
             } else {
-                return Storage::disk($this->disk->value)->path($path . '/' . $name);
+                Storage::disk($this->disk->value)->path($path . '/' . $name);
             }
+            return $path . '/' . $name;
         } catch (\Exception $exception) {
             Log::error($exception);
             return false;
@@ -127,39 +128,51 @@ class UploaderService
      * @param bool $overWrite
      * @return false|UploadFile
      */
-    public function storeInDatabase(string $originalName, string $path, string $mimeType, string|int $size, ?string $title = null ,bool $overWrite = false): false|UploadFile
+    public function storeInDatabase(string $originalName, string $path, string $mimeType, string|int $size, ?string $title = null, bool $overWrite = false): false|UploadFile
     {
         try {
-
-            return UploadFile::query()->updateOrCreate([
-                'path'          => $path,
-                'disk'          => $this->disk->value,
-                'mime_type'     => $mimeType,
-            ],
-                [
-                'original_name' => $originalName,
-                'title'         => $title,
-                'sizes'         => $size,
-            ]);
-        } catch (\Exception $exception) {
+            if ($overWrite) {
+                return UploadFile::query()->updateOrCreate([
+                    'path'      => $path,
+                    'disk'      => $this->disk->value,
+                    'mime_type' => $mimeType,
+                ],
+                    [
+                        'original_name' => $originalName,
+                        'title'         => $title,
+                        'sizes'         => $size,
+                    ]);
+            } else {
+                return UploadFile::query()->create([
+                    'path'          => $path,
+                    'disk'          => $this->disk->value,
+                    'mime_type'     => $mimeType,
+                    'original_name' => $originalName,
+                    'title'         => $title,
+                    'sizes'         => $size,
+                ]);
+            }
+        } catch
+        (\Exception $exception) {
             Log::error($exception);
             return false;
         }
     }
 
     /**
-     * @param UploadFile|int $uploadFile
-     * @return void
+     * @param UploadFile|int|string $uploadFile
+     * @return bool
      */
-    public function remove(UploadFile|int $uploadFile): void
+    public function remove(UploadFile|int|string $uploadFile): bool
     {
         if ($uploadFile instanceof UploadFile) {
             $file = $uploadFile;
         } else {
-            $file = UploadFile::query()->where('disk', $this->disk->value)->where('id', $uploadFile)->first();
+            $file = UploadFile::query()->where('disk', $this->disk->value)->where(function ($query) use ($uploadFile) {
+                return $query->where('id', $uploadFile)->orWhere('path', $uploadFile);
+            })->first();
         };
-        $this->removeFromDisk($file->path);
-        $this->removeFromDisk($file);
+        return $file->delete();
 
     }
 
