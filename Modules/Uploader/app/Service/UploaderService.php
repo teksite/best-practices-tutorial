@@ -37,7 +37,7 @@ class UploaderService
         $preparedFileName = $this->prepareFileName($preparedPath, $originalName, $customName, $overwrite);
 
 
-        $savedFileInDisk = $this->storeInDisk($file, $preparedPath, $preparedFileName);
+        $savedFileInDisk = $this->storeInDisk($file, $preparedPath, $preparedFileName, $overwrite);
 
         if ($savedFileInDisk) {
             $model = $this->storeInDatabase($originalName, $savedFileInDisk, $mimeType, $size, $title);
@@ -63,7 +63,7 @@ class UploaderService
     {
         if ($overwrite) return $customName ?? $fileName;
 
-        if ($customName == -1) return Str::uuid()->toString();
+        if ($customName == -1) $customName = Str::uuid()->toString();
         $baseName = $customName ?? pathinfo($fileName, PATHINFO_FILENAME);
         $extension = pathinfo($fileName, PATHINFO_EXTENSION);
 
@@ -100,12 +100,17 @@ class UploaderService
      * @param UploadedFile $file
      * @param string $path
      * @param string $name
+     * @param bool $overwrite
      * @return false|string
      */
-    public function storeInDisk(UploadedFile $file, string $path, string $name): false|string
+    public function storeInDisk(UploadedFile $file, string $path, string $name, bool $overwrite = false): false|string
     {
         try {
-            return Storage::disk($this->disk->value)->putFileAs($path, $file, $name);
+            if (Storage::disk($this->disk->value)->exists($path . '/' . $name)) {
+                return Storage::disk($this->disk->value)->putFileAs($path, $file, $name);
+            } else {
+                return Storage::disk($this->disk->value)->path($path . '/' . $name);
+            }
         } catch (\Exception $exception) {
             Log::error($exception);
             return false;
@@ -119,18 +124,22 @@ class UploaderService
      * @param string $mimeType
      * @param string|int $size
      * @param string|null $title
+     * @param bool $overWrite
      * @return false|UploadFile
      */
-    public function storeInDatabase(string $originalName, string $path, string $mimeType, string|int $size, ?string $title = null): false|UploadFile
+    public function storeInDatabase(string $originalName, string $path, string $mimeType, string|int $size, ?string $title = null ,bool $overWrite = false): false|UploadFile
     {
         try {
-            return UploadFile::query()->create([
+
+            return UploadFile::query()->updateOrCreate([
+                'path'          => $path,
+                'disk'          => $this->disk->value,
+                'mime_type'     => $mimeType,
+            ],
+                [
                 'original_name' => $originalName,
                 'title'         => $title,
-                'path'          => $path,
                 'sizes'         => $size,
-                'mime_type'     => $mimeType,
-                'disk'          => $this->disk->value,
             ]);
         } catch (\Exception $exception) {
             Log::error($exception);
