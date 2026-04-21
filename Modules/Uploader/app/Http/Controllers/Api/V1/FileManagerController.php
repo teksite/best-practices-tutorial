@@ -50,7 +50,7 @@ class FileManagerController extends Controller
         return ResponseJson::Failed(trans('uploader::messages.uploader.method_not_exist'), trans('uploader::messages.uploader.upload_failed'));
     }
 
-    public function delete(RequestUploadFile|string|array $file)
+    public function delete(UploadFile|string|array $file)
     {
         $res =!!$this->uploaderService->remove($file);
 
