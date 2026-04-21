@@ -19,6 +19,9 @@ return new class extends Migration {
             $table->string('mime_type');
             $table->string('disk');
             $table->timestamps();
+
+            $table->unique(['path', 'disk']);
+            $table->index(['path', 'disk']);
         });
 
 
