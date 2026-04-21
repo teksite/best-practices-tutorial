@@ -7,6 +7,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Modules\Uploader\Enums\DiskType;
 use Modules\Uploader\Models\UploadFile;
 
@@ -21,13 +22,13 @@ class UploaderService
 
     /**
      * @param UploadedFile $file
-     * @param string|null $customName
+     * @param int|string|null $customName set customName to -1 to set the file name by uuid
      * @param bool $overwrite
      * @param string|null $path
      * @param string|null $title
-     * @return false|UploadFile|null
+     * @return false|UploadFile
      */
-    public function upload(UploadedFile $file, ?string $customName = null, bool $overwrite = false, ?string $path = null, ?string $title = null): false|UploadFile|null
+    public function upload(UploadedFile $file, null|int|string $customName = null, bool $overwrite = false, ?string $path = null, ?string $title = null): false|UploadFile
     {
         $originalName = $file->getClientOriginalName();
         $preparedPath = $this->preparePath($path);
@@ -54,14 +55,15 @@ class UploaderService
     /**
      * @param string $path
      * @param string $fileName
-     * @param string|null $customName
+     * @param int|string|null $customName
      * @param bool $overwrite
      * @return string
      */
-    public function prepareFileName(string $path, string $fileName, ?string $customName = null, bool $overwrite = false): string
+    public function prepareFileName(string $path, string $fileName, null|int|string $customName = null, bool $overwrite = false): string
     {
         if ($overwrite) return $customName ?? $fileName;
 
+        if ($customName == -1) return Str::uuid()->toString();
         $baseName = $customName ?? pathinfo($fileName, PATHINFO_FILENAME);
         $extension = pathinfo($fileName, PATHINFO_EXTENSION);
 
@@ -137,10 +139,10 @@ class UploaderService
     }
 
     /**
-     * @param UploadFile|int|string $uploadFile
-     * @return bool|mixed|null
+     * @param UploadFile|int $uploadFile
+     * @return void
      */
-    public function remove(UploadFile|int $uploadFile): mixed
+    public function remove(UploadFile|int $uploadFile): void
     {
         if ($uploadFile instanceof UploadFile) {
             $file = $uploadFile;

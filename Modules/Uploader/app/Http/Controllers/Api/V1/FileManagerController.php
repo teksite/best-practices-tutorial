@@ -3,34 +3,49 @@
 namespace Modules\Uploader\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use Dotenv\Parser\Parser;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Modules\Main\Services\ResponseJson;
 use Modules\Uploader\Service\UploaderService;
 use Modules\User\Models\User;
 
 class FileManagerController extends Controller
 {
 
-  protected UploaderService $uploaderService;
+    protected UploaderService $uploaderService;
+
     public function __construct()
     {
-        $this->uploaderService=new UploaderService();
+        $this->uploaderService = new UploaderService();
     }
 
     public function upload(Request $request)
     {
-       $uploadedFile= $this->uploaderService->upload($request->file('file') ,null , false , null);
+        $uploadedFile = $this->uploaderService->upload($request->file('file'), null, false, null);
+        if (!!$uploadedFile) {
+            return ResponseJson::Success(['file' => $uploadedFile], trans('uploader::messages.success'));
+        } else {
+            return ResponseJson::Failed(trans('main::messages.global.server_wrong'), trans('uploader::messages.uploader.failed'));
+        }
 
     }
 
-    public function uploadByModel(Request $request ,null|Model $model = null)
+    public function uploadByModel(Request $request)
     {
         $model = User::query()->find(1);
-        $uploadedFile= $this->uploaderService->upload($request->file('file') ,null , false , null);
-        if (!!$model && method_exists($model,'uploader')){
-            $model->uploader()->syncWithPivotValues( $uploadedFile->id ,['name'=>'avatar'] );
-        }
-
+        if (!!$model && method_exists($model, 'uploader')) {
+            $uploadedFile = $this->uploaderService->upload($request->file('file'), null, false, null);
+            if (!!$uploadedFile) {
+                $model->uploader()->syncWithPivotValues($uploadedFile->id, ['name' => 'avatar']);
+                return ResponseJson::Success(['file' => $uploadedFile->model], trans('uploader::messages.uploader.success'));
+            }
+        } else
+            $classModel = !!$model ? get_class($model) : $request->input('model');;
+        Log::error("the model {$classModel} doesn't have method 'uploader'");
+        return ResponseJson::Failed(trans('uploader::messages.uploader.method_not_exist'), trans('uploader::messages.uploader.failed'));
     }
 }
