@@ -15,9 +15,10 @@ return new class extends Migration {
             $table->string('original_name');
             $table->string('title')->nullable();
             $table->string('path');
-            $table->unsignedBigInteger('sizes');
+            $table->unsignedBigInteger('size');
             $table->string('mime_type');
             $table->string('disk');
+            $table->json('other')->nullable();
             $table->timestamps();
 
             $table->unique(['path', 'disk']);

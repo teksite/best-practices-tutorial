@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Storage;
 use Modules\Main\Services\ResponseJson;
 use Modules\Uploader\Models\UploadFile;
 use Modules\Uploader\Service\UploaderService;
+use Modules\Uploader\Transformers\FileCollection;
+use Modules\Uploader\Transformers\FileResource;
 use Modules\User\Models\User;
 
 class FileManagerController extends Controller
@@ -24,11 +26,25 @@ class FileManagerController extends Controller
         $this->uploaderService = new UploaderService();
     }
 
+    public function index(Request $request)
+    {
+
+        $collectionFiles = FileCollection::make(UploadFile::query()->latest()->paginate());
+        return ResponseJson::Success($collectionFiles);
+    }
+
+    public function show(UploadFile $file)
+    {
+        $file = FileResource::make($file);
+        return ResponseJson::Success(compact('file'));
+    }
+
+
     public function upload(Request $request)
     {
-        $uploadedFile = $this->uploaderService->upload($request->file('file'), null, false, null);
-        if (!!$uploadedFile) {
-            return ResponseJson::Success(['file' => $uploadedFile], trans('uploader::messages.upload_success'));
+        $file = $this->uploaderService->upload($request->file('file'), null, false, null);
+        if (!!$file) {
+            return ResponseJson::Success(['file' => FileResource::make($file)], trans('uploader::messages.uploader.upload_success'));
         } else {
             return ResponseJson::Failed(trans('main::messages.global.server_wrong'), trans('uploader::messages.uploader.upload_failed'));
         }
@@ -39,25 +55,26 @@ class FileManagerController extends Controller
     {
         $model = User::query()->find(1);
         if (!!$model && method_exists($model, 'uploader')) {
-            $uploadedFile = $this->uploaderService->upload($request->file('file'), null, false, null);
-            if (!!$uploadedFile) {
-                $model->uploader()->syncWithPivotValues($uploadedFile->id, ['name' => 'avatar']);
-                return ResponseJson::Success(['file' => $uploadedFile], trans('uploader::messages.uploader.upload_success'));
+            $file = $this->uploaderService->upload($request->file('file'), null, false, null);
+            if (!!$file) {
+                $model->uploader()->syncWithPivotValues($file->id, ['name' => 'avatar']);
+                return ResponseJson::Success(['file' =>  FileResource::make($file)], trans('uploader::messages.uploader.upload_success'));
             }
-        } else
+        } else {
             $classModel = !!$model ? get_class($model) : $request->input('model');;
-        Log::error("the model {$classModel} doesn't have method 'uploader'");
+            Log::error("the model {$classModel} doesn't have method 'uploader'");
+        }
+
         return ResponseJson::Failed(trans('uploader::messages.uploader.method_not_exist'), trans('uploader::messages.uploader.upload_failed'));
+
     }
 
     public function delete(UploadFile|string|array $file)
     {
-        $res =!!$this->uploaderService->remove($file);
+        $res = !!$this->uploaderService->remove($file);
 
-       if ($res){
-           return ResponseJson::Success([], trans('uploader::messages.uploader.delete_success'));
+        if ($res) return ResponseJson::Success([], trans('uploader::messages.uploader.delete_success'));
 
-       }
         return ResponseJson::Failed(trans('main::messages.global.server_wrong'), trans('uploader::messages.uploader.delete_failed'));
     }
 }

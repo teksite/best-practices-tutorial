@@ -135,7 +135,7 @@ class UploaderService
             $values = [
                 'original_name' => $originalName,
                 'title'         => $title,
-                'sizes'         => $size,
+                'size'         => $size,
             ];
 
             return $overWrite
