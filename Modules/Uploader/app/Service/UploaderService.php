@@ -14,10 +14,15 @@ use Modules\Uploader\Models\UploadFile;
 class UploaderService
 {
 
-    public function __construct(protected DiskType $disk = DiskType::LOCAL)
+    public function __construct(public DiskType $disk = DiskType::LOCAL)
     {
 
 
+    }
+
+    public static function make( DiskType $disk = DiskType::LOCAL): UploaderService
+    {
+        return (new UploaderService($disk));
     }
 
     /**

@@ -60,6 +60,33 @@ return [
             'report' => false,
         ],
 
+
+        's3-arvan_private' => [
+            'driver' => 's3',
+            'key' => env('ARVAN_PRIVATE_ACCESS_KEY_ID'),
+            'secret' => env('ARVAN_PRIVATE_SECRET_ACCESS_KEY'),
+            'region' => env('ARVAN_PRIVATE_DEFAULT_REGION'),
+            'bucket' => env('ARVAN_PRIVATE_BUCKET'),
+            'url' => env('ARVAN_PRIVATE_URL'),
+            'endpoint' => env('ARVAN_PRIVATE_ENDPOINT'),
+            'use_path_style_endpoint' => env('ARVAN_PRIVATE_USE_PATH_STYLE_ENDPOINT', false),
+            'throw' => false,
+            'report' => false,
+        ],
+
+        's3-arvan_public' => [
+            'driver' => 's3',
+            'key' => env('ARVAN_PUBLIC_ACCESS_KEY_ID'),
+            'secret' => env('ARVAN_PUBLIC_SECRET_ACCESS_KEY'),
+            'region' => env('ARVAN_PUBLIC_DEFAULT_REGION'),
+            'bucket' => env('ARVAN_PUBLIC_BUCKET'),
+            'url' => env('ARVAN_PUBLIC_URL'),
+            'endpoint' => env('ARVAN_PUBLIC_ENDPOINT'),
+            'use_path_style_endpoint' => env('ARVAN_PUBLIC_USE_PATH_STYLE_ENDPOINT', false),
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
     ],
 
     /*

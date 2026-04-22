@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Modules\Main\Services\ResponseJson;
+use Modules\Uploader\Enums\DiskType;
 use Modules\Uploader\Events\UploadedNewFileEvent;
 use Modules\Uploader\Jobs\ResizeImageJob;
 use Modules\Uploader\Models\UploadFile;
@@ -21,12 +22,6 @@ use Modules\User\Models\User;
 class FileManagerController extends Controller
 {
 
-    protected UploaderService $uploaderService;
-
-    public function __construct()
-    {
-        $this->uploaderService = new UploaderService();
-    }
 
     public function index(Request $request)
     {
@@ -44,7 +39,7 @@ class FileManagerController extends Controller
 
     public function upload(Request $request)
     {
-        $file = $this->uploaderService->upload($request->file('file'), null, false, null);
+        $file =UploaderService::make(DiskType::ARVAN_PUBLIC)->upload($request->file('file'), null, false, null);
         if (!!$file) {
             event(new UploadedNewFileEvent($file));
             return ResponseJson::Success(['file' => FileResource::make($file)], trans('uploader::messages.uploader.upload_success'));
@@ -58,7 +53,7 @@ class FileManagerController extends Controller
     {
         $model = User::query()->find(1);
         if (!!$model && method_exists($model, 'uploader')) {
-            $file = $this->uploaderService->upload($request->file('file'), null, false, null);
+            $file = UploaderService::make(DiskType::ARVAN_PRIVATE)->upload($request->file('file'), null, false, null);
             event(new UploadedNewFileEvent($file));
 
             if (!!$file) {
