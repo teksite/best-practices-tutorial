@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Modules\Main\Services\ResponseJson;
+use Modules\Uploader\Events\UploadedNewFileEvent;
+use Modules\Uploader\Jobs\ResizeImageJob;
 use Modules\Uploader\Models\UploadFile;
 use Modules\Uploader\Service\UploaderService;
 use Modules\Uploader\Transformers\FileCollection;
@@ -44,6 +46,7 @@ class FileManagerController extends Controller
     {
         $file = $this->uploaderService->upload($request->file('file'), null, false, null);
         if (!!$file) {
+            event(new UploadedNewFileEvent($file));
             return ResponseJson::Success(['file' => FileResource::make($file)], trans('uploader::messages.uploader.upload_success'));
         } else {
             return ResponseJson::Failed(trans('main::messages.global.server_wrong'), trans('uploader::messages.uploader.upload_failed'));
@@ -56,6 +59,8 @@ class FileManagerController extends Controller
         $model = User::query()->find(1);
         if (!!$model && method_exists($model, 'uploader')) {
             $file = $this->uploaderService->upload($request->file('file'), null, false, null);
+            event(new UploadedNewFileEvent($file));
+
             if (!!$file) {
                 $model->uploader()->syncWithPivotValues($file->id, ['name' => 'avatar']);
                 return ResponseJson::Success(['file' =>  FileResource::make($file)], trans('uploader::messages.uploader.upload_success'));

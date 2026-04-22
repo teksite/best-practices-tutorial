@@ -13,11 +13,13 @@ class FileResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id'            => $this->id,
             'original_name' => $this->original_name,
             'title'         => $this->title,
             'path'          => $this->path,
             'sizes'         => $this->sizes,
             'mime_type'     => $this->mime_type,
+            'other'         => $this->other,
             'disk'          => $this->disk,
         ];
     }
