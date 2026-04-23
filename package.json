@@ -13,5 +13,11 @@
         "laravel-vite-plugin": "^3.0.0",
         "tailwindcss": "^4.0.0",
         "vite": "^8.0.0"
+    },
+    "dependencies": {
+        "@vitejs/plugin-react": "^6.0.1",
+        "react": "^19.2.5",
+        "react-dom": "^19.2.5",
+        "ulidx": "^2.4.1"
     }
 }

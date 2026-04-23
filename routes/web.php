@@ -7,3 +7,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function (Request $request) {
     dd($request->userAgent(), $request->ip(),$request->host() , $request);
 });
+
+Route::get('/chunk', function (Request $request) {
+    return view('react.chunk');
+});

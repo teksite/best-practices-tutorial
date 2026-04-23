@@ -30,7 +30,6 @@ class ResizeImageJob implements ShouldQueue
     public function __construct(protected UploadFile $file)
     {
         $this->onQueue('imageresize');
-        $this->onConnection('sync');
     }
 
     /**
